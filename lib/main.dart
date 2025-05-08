@@ -1,3 +1,4 @@
+import 'package:NegXus/Pages/HomePage/HomePage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // 👈 Required for GetMaterialApp
 
@@ -20,7 +21,7 @@ class MyApp extends StatelessWidget {
       darkTheme: darkTheme,
       themeMode: ThemeMode.dark,
       getPages: getPath, // 👈 This connects your defined routes
-      home: WelcomePage(),
+      home: HomePage(),
     );
   }
 }

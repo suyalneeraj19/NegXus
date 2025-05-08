@@ -8,6 +8,10 @@ var darkTheme = ThemeData(
   inputDecorationTheme: InputDecorationTheme(
     fillColor: dOnContainerColor,
     filled: true,
+    border: UnderlineInputBorder(
+      borderSide: BorderSide.none,
+      borderRadius: BorderRadius.circular(10),
+    ),
   ),
   colorScheme: ColorScheme.dark(
     primary: dPrimarColor,

@@ -1,5 +1,7 @@
 import 'package:NegXus/Pages/Widgets/PrimaryButton.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 
 class SignupForm extends StatelessWidget {
   const SignupForm({super.key});
@@ -32,7 +34,15 @@ class SignupForm extends StatelessWidget {
         SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [PrimaryButton(btnName: "SIGNUP", icon: Icons.lock_open_outlined)],
+          children: [
+            PrimaryButton(
+              ontap: () {
+                Get.offAllNamed("/homePage");
+              },
+              btnName: "SIGNUP",
+              icon: Icons.lock_open_outlined,
+            )
+          ],
         )
       ],
     );
