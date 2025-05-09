@@ -27,6 +27,11 @@ flutter:
     - assets/icons/app_icon.svg
     - assets/icons/conn_icon.svg
     - assets/icons/socket.svg
+    - assets/icons/emoji.svg
+    - assets/icons/gallery.svg
+    - assets/icons/mic.svg
+    - assets/icons/send.svg
+    - assets/icons/status_icon.svg
     - assets/Images/boy_png.png
     - assets/Images/girl_png.png
 

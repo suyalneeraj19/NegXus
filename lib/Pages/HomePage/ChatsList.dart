@@ -1,5 +1,8 @@
+import 'package:NegXus/Pages/Chat/ChatPage.dart';
 import 'package:NegXus/Pages/HomePage/ChatTile.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import '../../Config/Images.dart';
 
 class ChatsList extends StatelessWidget {
@@ -9,18 +12,22 @@ class ChatsList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       children: [
-        ChatTile(
-          imageUrl: AssetsImage.girlPicPNG,
-          name: "Ritika ",
-          lastChat: "Let's Catch up later",
-          lastTime: "09:00 P.M",
-        ),
+        InkWell(
+            onTap: () {
+              Get.toNamed("/chatPage");
+            },
+            child: ChatTile(
+              imageUrl: AssetsImage.girlPicPNG,
+              name: "Ritika ",
+              lastChat: "Let's Catch up later",
+              lastTime: "09:00 P.M",
+            )),
         ChatTile(
           imageUrl: AssetsImage.boyPicPNG,
           name: "Aman ",
           lastChat: "kaisa hai bhai",
           lastTime: "07:00 P.M",
-        )
+        ),
       ],
     );
   }

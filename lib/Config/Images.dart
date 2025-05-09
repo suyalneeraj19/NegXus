@@ -10,4 +10,10 @@ class AssetsImage {
 //   PNG IMAGES ONLY
   static const boyPicPNG = "$imagesPath/boy_png.png";
   static const girlPicPNG = "$imagesPath/girl_png.png";
+
+  static const chatStatusSVG = "$iconsPath/status_icon.svg";
+  static const gallerySVG = "$iconsPath/gallery.svg";
+  static const micSVG = "$iconsPath/mic.svg";
+  static const sendSVG = "$iconsPath/send.svg";
+  static const emojiSVG = "$iconsPath/emoji.svg";
 }
