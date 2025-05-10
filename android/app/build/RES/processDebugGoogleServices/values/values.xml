@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="gcm_defaultSenderId" translatable="false">763982926032</string>
+    <string name="google_api_key" translatable="false">AIzaSyDcoIv5-3Im6LDyzpGt2JM-5e9eAMsxT5I</string>
+    <string name="google_app_id" translatable="false">1:763982926032:android:f1936df98b6dfd83bd8ed5</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyDcoIv5-3Im6LDyzpGt2JM-5e9eAMsxT5I</string>
+    <string name="google_storage_bucket" translatable="false">negxus-c023a.firebasestorage.app</string>
+    <string name="project_id" translatable="false">negxus-c023a</string>
+</resources>

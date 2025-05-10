@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "763982926032",
+    "project_id": "negxus-c023a",
+    "storage_bucket": "negxus-c023a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:763982926032:android:f1936df98b6dfd83bd8ed5",
+        "android_client_info": {
+          "package_name": "com.example.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcoIv5-3Im6LDyzpGt2JM-5e9eAMsxT5I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

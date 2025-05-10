@@ -20,10 +20,10 @@ class PrimaryButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.lock_open_sharp),
+            Icon(icon),
             SizedBox(width: 10), // optional spacing between icon and text
             Text(
-              "LOGIN",
+              btnName,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
           ],

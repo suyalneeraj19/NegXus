@@ -12,7 +12,7 @@ class AuthPageBody extends StatefulWidget {
 }
 
 class _AuthPageBodyState extends State<AuthPageBody> with TickerProviderStateMixin {
-  final RxBool isLogin = false.obs;
+  final RxBool isLogin = true.obs;
 
   @override
   Widget build(BuildContext context) {
