@@ -4,6 +4,8 @@ import 'package:NegXus/Pages/HomePage/ChatsList.dart';
 import 'package:NegXus/Pages/HomePage/myTabBar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -40,7 +42,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Get.toNamed('/ProfilePage');
+            },
             icon: Icon(
               Icons.more_vert,
             ),

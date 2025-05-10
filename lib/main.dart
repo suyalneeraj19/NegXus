@@ -1,5 +1,6 @@
 import 'package:NegXus/Pages/Auth/AuthPage.dart';
 import 'package:NegXus/Pages/HomePage/HomePage.dart';
+import 'package:NegXus/Pages/SplashPage/SplashPage.dart';
 import 'package:NegXus/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +29,7 @@ class MyApp extends StatelessWidget {
       darkTheme: darkTheme,
       themeMode: ThemeMode.dark,
       getPages: getPath,
-      home: AuthPage(),
+      home: HomePage(),
     );
   }
 }

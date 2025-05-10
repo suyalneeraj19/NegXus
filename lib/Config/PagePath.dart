@@ -1,6 +1,8 @@
 import 'package:NegXus/Pages/Auth/AuthPage.dart';
 import 'package:NegXus/Pages/Chat/ChatPage.dart';
 import 'package:NegXus/Pages/HomePage/HomePage.dart';
+import 'package:NegXus/Pages/Profile/ProfilePage.dart';
+import 'package:NegXus/Pages/Profile/UpdateProfile.dart';
 import 'package:get/get.dart';
 
 var getPath = [
@@ -17,6 +19,16 @@ var getPath = [
   GetPage(
     name: "/chatPage",
     page: () => ChatPage(),
+    transition: Transition.leftToRight,
+  ),
+  GetPage(
+    name: "/ProfilePage",
+    page: () => ProfilePage(),
+    transition: Transition.leftToRight,
+  ),
+  GetPage(
+    name: "/updateProfilePage",
+    page: () => UpdateProfile(),
     transition: Transition.leftToRight,
   ),
 ];

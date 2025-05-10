@@ -16,4 +16,9 @@ class AssetsImage {
   static const micSVG = "$iconsPath/mic.svg";
   static const sendSVG = "$iconsPath/send.svg";
   static const emojiSVG = "$iconsPath/emoji.svg";
+  static const callSVG = "$iconsPath/call.svg";
+  static const delteSVG = "$iconsPath/delete.svg";
+  static const securitySVG = "$iconsPath/security.svg";
+  static const userSVG = "$iconsPath/user.svg";
+  static const videocallSVG = "$iconsPath/videocall.svg";
 }

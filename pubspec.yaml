@@ -16,6 +16,8 @@ dependencies:
   get: ^4.6.6
   firebase_core: ^2.25.4
   firebase_auth: ^4.17.4
+  cloud_firestore: ^4.15.4
+
 
 dev_dependencies:
   flutter_test:
@@ -34,9 +36,13 @@ flutter:
     - assets/icons/mic.svg
     - assets/icons/send.svg
     - assets/icons/status_icon.svg
+    - assets/icons/call.svg
+    - assets/icons/delete.svg
+    - assets/icons/security.svg
+    - assets/icons/user.svg
     - assets/Images/boy_png.png
     - assets/Images/girl_png.png
-
+    - assets/icons/videocall.svg
 
   fonts:
     - family: Poppins
