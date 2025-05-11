@@ -1,8 +1,8 @@
 import 'package:NegXus/Pages/Widgets/PrimaryButton.dart';
 import 'package:flutter/material.dart';
 
-class UpdateProfile extends StatelessWidget {
-  const UpdateProfile({super.key});
+class UserUpdateProfile extends StatelessWidget {
+  const UserUpdateProfile({super.key});
 
   @override
   @override

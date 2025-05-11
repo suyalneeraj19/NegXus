@@ -2,6 +2,7 @@ import 'package:NegXus/Config/Images.dart';
 import 'package:NegXus/Config/String.dart';
 import 'package:NegXus/Pages/HomePage/ChatsList.dart';
 import 'package:NegXus/Pages/HomePage/myTabBar.dart';
+import 'package:NegXus/Pages/ProfilePage/ProfilePage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -43,7 +44,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
           IconButton(
             onPressed: () {
-              Get.toNamed('/ProfilePage');
+              Get.to(ProfilePage());
             },
             icon: Icon(
               Icons.more_vert,
