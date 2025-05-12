@@ -17,16 +17,16 @@ var getPath = [
     page: () => HomePage(),
     transition: Transition.leftToRight,
   ),
-  GetPage(
-    name: "/chatPage",
-    page: () => ChatPage(),
-    transition: Transition.leftToRight,
-  ),
-  GetPage(
-    name: "/ProfilePage",
-    page: () => UserProfilePage(),
-    transition: Transition.leftToRight,
-  ),
+  // GetPage(
+  //   name: "/chatPage",
+  //   page: () => ChatPage(),
+  //   transition: Transition.leftToRight,
+  // ),
+  // GetPage(
+  //   name: "/ProfilePage",
+  //   page: () => UserProfilePage(),
+  //   transition: Transition.leftToRight,
+  // ),
   GetPage(
     name: "/updateProfilePage",
     page: () => UserUpdateProfile(),

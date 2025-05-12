@@ -1,6 +1,7 @@
 import 'package:NegXus/Config/Images.dart';
 import 'package:NegXus/Controller/AuthController.dart';
 import 'package:NegXus/Controller/ProfileController.dart';
+import 'package:NegXus/Model/UserModel.dart';
 import 'package:NegXus/Pages/UserProfile/UserInfo.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +10,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 
 class UserProfilePage extends StatelessWidget {
-  const UserProfilePage({super.key});
+  const UserProfilePage({super.key, required UserModel userModel});
 
   @override
   Widget build(BuildContext context) {

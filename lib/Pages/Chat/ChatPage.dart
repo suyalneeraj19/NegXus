@@ -1,113 +1,195 @@
 import 'package:NegXus/Config/Images.dart';
+import 'package:NegXus/Controller/CallController.dart';
+import 'package:NegXus/Controller/ChatController.dart';
+import 'package:NegXus/Controller/ProfileController.dart';
+import 'package:NegXus/Model/UserModel.dart';
 import 'package:NegXus/Pages/Chat/ChatBubble.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+
+import '../UserProfile/UserProfilePage.dart';
 
 class ChatPage extends StatelessWidget {
-  const ChatPage({super.key});
+  final UserModel userModel;
+  const ChatPage({super.key, required this.userModel});
 
   @override
   Widget build(BuildContext context) {
+    ChatController chatController = Get.put(ChatController());
+    TextEditingController messageController = TextEditingController();
+    ProfileController profileController = Get.put(ProfileController());
+    CallController callController = Get.put(CallController());
     return Scaffold(
-      resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        leading: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Image.asset(AssetsImage.girlPicPNG),
+        leading: InkWell(
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          onTap: () {
+            Get.to(UserProfilePage(
+              userModel: userModel,
+            ));
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(5),
+            child: Container(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(100),
+                child: CachedNetworkImage(
+                  imageUrl: userModel.profileImage ?? AssetsImage.defaultProfileUrl,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => CircularProgressIndicator(),
+                  errorWidget: (context, url, error) => Icon(Icons.error),
+                ),
+              ),
+            ),
+          ),
         ),
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Ritika"),
-            Text(
-              "Online",
-              style: Theme.of(context).textTheme.labelSmall,
-            )
-          ],
+        title: InkWell(
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          onTap: () {
+            Get.to(UserProfilePage(
+              userModel: userModel,
+            ));
+          },
+          child: Row(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(userModel.name ?? "User", style: Theme.of(context).textTheme.bodyLarge),
+                  StreamBuilder(
+                    stream: chatController.getStatus(userModel.id!),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Text("........");
+                      } else {
+                        return Text(
+                          snapshot.data!.status ?? "",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: snapshot.data!.status == "Online" ? Colors.green : Colors.grey,
+                          ),
+                        );
+                      }
+                    },
+                  )
+                ],
+              ),
+            ],
+          ),
         ),
         actions: [
           IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.phone),
+            onPressed: () {
+              Get.to(AudioCallPage(target: userModel));
+              callController.callAction(userModel, profileController.currentUser.value, "audio");
+            },
+            icon: Icon(
+              Icons.phone,
+            ),
           ),
           IconButton(
-            onPressed: () {},
-            icon: Icon(Icons.video_call),
+            onPressed: () {
+              Get.to(VideoCallPage(target: userModel));
+              callController.callAction(userModel, profileController.currentUser.value, "video");
+            },
+            icon: Icon(
+              Icons.video_call,
+            ),
           )
         ],
       ),
-      body: SafeArea(
+      body: Padding(
+        padding: EdgeInsets.only(bottom: 10, top: 10, left: 10, right: 10),
         child: Column(
           children: [
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(10),
-                children: const [
-                  ChatBubble(
-                    sms: "Hello World",
-                    imageUrl: '',
-                    isComing: true,
-                    status: "read",
-                    time: "10:30 A.M",
+              child: Stack(
+                children: [
+                  StreamBuilder(
+                    stream: chatController.getMessages(userModel.id!),
+                    builder: (context, snapshot) {
+                      var roomid = chatController.getRoomId(userModel.id!);
+                      chatController.markMessagesAsRead(roomid!);
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+                      if (snapshot.hasError) {
+                        return Center(
+                          child: Text("Error: ${snapshot.error}"),
+                        );
+                      }
+                      if (snapshot.data == null) {
+                        return const Center(
+                          child: Text("No Messages"),
+                        );
+                      } else {
+                        return ListView.builder(
+                          reverse: true,
+                          itemCount: snapshot.data!.length,
+                          itemBuilder: (context, index) {
+                            DateTime timestamp = DateTime.parse(snapshot.data![index].timestamp!);
+                            String formattedTime = DateFormat('hh:mm a').format(timestamp);
+
+                            return ChatBubble(
+                              message: snapshot.data![index].message!,
+                              imageUrl: snapshot.data![index].imageUrl ?? "",
+                              isComming: snapshot.data![index].receiverId == profileController.currentUser.value.id,
+                              status: snapshot.data![index].readStatus!,
+                              time: formattedTime,
+                            );
+                          },
+                        );
+                      }
+                    },
                   ),
-                  ChatBubble(
-                    sms: "Hello World",
-                    imageUrl: "https://i.pinimg.com/564x/2d/1d/0c/2d1d0c17ecb30e266f2aaa29da8566a7.jpg",
-                    isComing: false,
-                    status: "read",
-                    time: "10:30 A.M",
-                  ),
+                  Obx(
+                    () => (chatController.selectedImagePath.value != "")
+                        ? Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            child: Stack(
+                              children: [
+                                Container(
+                                  margin: EdgeInsets.only(bottom: 10),
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      image: FileImage(
+                                        File(chatController.selectedImagePath.value),
+                                      ),
+                                      fit: BoxFit.contain,
+                                    ),
+                                    color: Theme.of(context).colorScheme.primaryContainer,
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  height: 500,
+                                ),
+                                Positioned(
+                                  right: 0,
+                                  child: IconButton(
+                                    onPressed: () {
+                                      chatController.selectedImagePath.value = "";
+                                    },
+                                    icon: Icon(Icons.close),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : Container(),
+                  )
                 ],
               ),
             ),
-            Container(
-              margin: const EdgeInsets.all(10),
-              padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(100),
-                color: Theme.of(context).colorScheme.primaryContainer,
-              ),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 30,
-                    height: 30,
-                    child: SvgPicture.asset(
-                      AssetsImage.micSVG,
-                      width: 25,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
-                      decoration: const InputDecoration(
-                        filled: false,
-                        hintText: "Type Message",
-                        border: InputBorder.none,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  SizedBox(
-                    width: 30,
-                    height: 30,
-                    child: SvgPicture.asset(
-                      AssetsImage.gallerySVG,
-                      width: 25,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  SizedBox(
-                    width: 30,
-                    height: 30,
-                    child: SvgPicture.asset(
-                      AssetsImage.sendSVG,
-                      width: 25,
-                    ),
-                  ),
-                ],
-              ),
+            TypeMessage(
+              userModel: userModel,
             ),
           ],
         ),

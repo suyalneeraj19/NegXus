@@ -1,17 +1,19 @@
 import 'package:NegXus/Config/Images.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class ChatBubble extends StatelessWidget {
   final String sms;
-  final bool isComing;
+  final bool isComming;
   final String time;
   final String status;
   final String imageUrl;
+
   const ChatBubble({
     super.key,
     required this.sms,
-    required this.isComing,
+    required this.isComming,
     required this.time,
     required this.status,
     required this.imageUrl,
@@ -20,67 +22,75 @@ class ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.only(bottom: 20),
       child: Column(
-        crossAxisAlignment: isComing ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+        crossAxisAlignment: isComming ? CrossAxisAlignment.start : CrossAxisAlignment.end,
         children: [
           Container(
-            padding: EdgeInsets.all(10),
+            padding: const EdgeInsets.all(10),
             constraints: BoxConstraints(
-              minWidth: 10,
               maxWidth: MediaQuery.sizeOf(context).width / 1.3,
             ),
-            decoration: isComing
-                ? BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    borderRadius: const BorderRadius.only(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primaryContainer,
+              borderRadius: isComming
+                  ? const BorderRadius.only(
                       topLeft: Radius.circular(10),
                       topRight: Radius.circular(10),
                       bottomLeft: Radius.circular(0),
                       bottomRight: Radius.circular(10),
-                    ),
-                  )
-                : BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    borderRadius: const BorderRadius.only(
+                    )
+                  : const BorderRadius.only(
                       topLeft: Radius.circular(10),
                       topRight: Radius.circular(10),
                       bottomLeft: Radius.circular(10),
                       bottomRight: Radius.circular(0),
                     ),
-                  ),
-            child: imageUrl == ""
+            ),
+            child: imageUrl.isEmpty
                 ? Text(sms)
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: Image.network(imageUrl),
+                        child: CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => const CircularProgressIndicator(),
+                          errorWidget: (context, url, error) => const Icon(Icons.error),
+                        ),
                       ),
-                      SizedBox(height: 10),
-                      Text(sms),
+                      if (sms.isNotEmpty) const SizedBox(height: 10),
+                      if (sms.isNotEmpty) Text(sms),
                     ],
                   ),
           ),
-          SizedBox(
-            height: 10,
-          ),
+          const SizedBox(height: 10),
           Row(
-            mainAxisAlignment: isComing ? MainAxisAlignment.start : MainAxisAlignment.end,
+            mainAxisAlignment: isComming ? MainAxisAlignment.start : MainAxisAlignment.end,
             children: [
-              isComing
-                  ? Text(time)
+              isComming
+                  ? Text(
+                      time,
+                      style: Theme.of(context).textTheme.labelMedium,
+                    )
                   : Row(
                       children: [
-                        Text(time),
+                        Text(
+                          time,
+                          style: Theme.of(context).textTheme.labelMedium,
+                        ),
+                        const SizedBox(width: 10),
                         SvgPicture.asset(
-                          AssetsImage.chatStatusSVG,
+                          AssetsImage.statusSVG,
+                          color: status == "read" ? Colors.green : Colors.grey,
+                          width: 20,
                         ),
                       ],
-                    )
+                    ),
             ],
-          )
+          ),
         ],
       ),
     );

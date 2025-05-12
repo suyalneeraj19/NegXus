@@ -1,10 +1,12 @@
 import 'package:NegXus/Controller/ContactController.dart';
+import 'package:NegXus/Pages/Chat/ChatPage.dart';
 import 'package:NegXus/Pages/ContactPage/ContactSearch.dart';
 import 'package:NegXus/Pages/ContactPage/NewContactTile.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../Config/Images.dart';
+import '../../Controller/ChatController.dart';
 import '../HomePage/ChatTile.dart';
 
 class ContactPage extends StatelessWidget {
@@ -14,7 +16,7 @@ class ContactPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final RxBool isSearchEnabled = false.obs;
     final ContactController contactController = Get.put(ContactController());
-
+    final ChatController chatController = Get.put(ChatController());
     return Scaffold(
       appBar: AppBar(
         title: const Text("Select contact"),
@@ -57,24 +59,29 @@ class ContactPage extends StatelessWidget {
             const SizedBox(height: 10),
 
             // 4. Contacts list
-            Obx(() => Column(
-                  children: contactController.userList.map((user) {
-                    // choose network or default asset
-                    final imageUrl = (user.profileImage != null && user.profileImage!.startsWith('http'))
-                        ? user.profileImage!
-                        : AssetsImage.defaultProfileUrl;
+            Obx(
+              () => Column(
+                children: contactController.userList.map((user) {
+                  final imageUrl = (user.profileImage != null && user.profileImage!.startsWith('http'))
+                      ? user.profileImage!
+                      : AssetsImage.defaultProfileUrl;
 
-                    return InkWell(
-                      onTap: () => Get.toNamed("/chatPage"),
-                      child: ChatTile(
-                        imageUrl: imageUrl,
-                        name: user.name ?? "User",
-                        lastChat: user.about ?? "Hello",
-                        lastTime: "", // no user.lastTime field
-                      ),
-                    );
-                  }).toList(),
-                )),
+                  return InkWell(
+                    onTap: () {
+                      ChatPage(userModel: user);
+                      String roomId = chatController.getRoomId(user.id!);
+                      print(roomId);
+                    },
+                    child: ChatTile(
+                      imageUrl: imageUrl,
+                      name: user.name ?? "User",
+                      lastChat: user.about ?? "Hello",
+                      lastTime: "",
+                    ),
+                  );
+                }).toList(),
+              ),
+            )
           ],
         ),
       ),
