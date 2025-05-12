@@ -1,20 +1,63 @@
+import 'dart:io';
+
+import 'package:NegXus/Controller/ImagePicker.dart';
 import 'package:NegXus/Controller/ProfileController.dart';
 import 'package:NegXus/Pages/Widgets/PrimaryButton.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class ProfilePage extends StatelessWidget {
-  ProfilePage({super.key});
+class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  final RxBool isEdit = false.obs;
+  late final ProfileController profileController;
+  late final ImagePickerController imagePickerController;
+
+  final TextEditingController name = TextEditingController();
+  final TextEditingController email = TextEditingController();
+  final TextEditingController phone = TextEditingController();
+  final TextEditingController about = TextEditingController();
+  final RxString imagePath = ''.obs;
+
+  @override
+  void initState() {
+    super.initState();
+
+    profileController = Get.put(ProfileController());
+    imagePickerController = Get.put(ImagePickerController());
+
+    // Set initial values
+    final user = profileController.currentUser.value;
+    name.text = user.name ?? "";
+    email.text = user.email ?? "";
+    phone.text = user.phoneNumber ?? "";
+    about.text = user.about ?? "";
+
+    // Listen for user data changes
+    ever(profileController.currentUser, (user) {
+      name.text = user.name ?? "";
+      email.text = user.email ?? "";
+      phone.text = user.phoneNumber ?? "";
+      about.text = user.about ?? "";
+    });
+  }
+
+  @override
+  void dispose() {
+    name.dispose();
+    email.dispose();
+    phone.dispose();
+    about.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    RxBool isEdit = false.obs;
-    ProfileController profileController = Get.put(ProfileController());
-
-    TextEditingController name = TextEditingController(text: profileController.currentUser.value.name);
-    TextEditingController email = TextEditingController(text: profileController.currentUser.value.email);
-    TextEditingController phone = TextEditingController(text: profileController.currentUser.value.phoneNumber);
-    TextEditingController about = TextEditingController(text: profileController.currentUser.value.about);
     return Scaffold(
       appBar: AppBar(
         title: const Text("Profile"),
@@ -36,15 +79,60 @@ class ProfilePage extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircleAvatar(
-                          backgroundColor: Theme.of(context).colorScheme.background,
-                          radius: 60,
-                          child: const Icon(Icons.image, size: 40),
+                        Obx(
+                          () => isEdit.value
+                              ? InkWell(
+                                  onTap: () async {
+                                    imagePath.value = await imagePickerController.pickImage();
+
+                                    print("Image picked: ${imagePath.value}");
+                                  },
+                                  child: Container(
+                                    height: 200,
+                                    width: 200,
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).colorScheme.background,
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
+                                    child: imagePath.value == ""
+                                        ? const Icon(Icons.add, size: 40)
+                                        : ClipRRect(
+                                            borderRadius: BorderRadius.circular(100),
+                                            child: Image.file(
+                                              File(imagePath.value),
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                  ),
+                                )
+                              : Container(
+                                  height: 200,
+                                  width: 200,
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.background,
+                                    borderRadius: BorderRadius.circular(100),
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(100), // <-- This makes it round
+                                    child: profileController.currentUser.value.profileImage!.startsWith('http')
+                                        ? Image.network(
+                                            profileController.currentUser.value.profileImage!,
+                                            fit: BoxFit.cover,
+                                            height: 200,
+                                            width: 200,
+                                          )
+                                        : Image.file(
+                                            File(profileController.currentUser.value.profileImage!),
+                                            fit: BoxFit.cover,
+                                            height: 200,
+                                            width: 200,
+                                          ),
+                                  ),
+                                ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 10),
-                    // Name (Editable)
                     TextField(
                       controller: name,
                       enabled: isEdit.value,
@@ -52,25 +140,23 @@ class ProfilePage extends StatelessWidget {
                         labelText: "Name",
                         prefixIcon: const Icon(Icons.person, color: Colors.white),
                         filled: true,
-                        fillColor: Theme.of(context).colorScheme.background,
+                        fillColor: isEdit.value ? Theme.of(context).colorScheme.background : Theme.of(context).colorScheme.primaryContainer,
                       ),
                     ),
                     const SizedBox(height: 10),
-                    // About (Editable, multiline)
                     TextField(
                       controller: about,
                       enabled: isEdit.value,
-                      minLines: 2,
+                      minLines: 1,
                       maxLines: 3,
                       decoration: InputDecoration(
                         labelText: "About",
                         prefixIcon: const Icon(Icons.info, color: Colors.white),
                         filled: true,
-                        fillColor: Theme.of(context).colorScheme.background,
+                        fillColor: isEdit.value ? Theme.of(context).colorScheme.background : Theme.of(context).colorScheme.primaryContainer,
                       ),
                     ),
                     const SizedBox(height: 10),
-                    // Email (Read-only)
                     TextField(
                       controller: email,
                       enabled: false,
@@ -78,34 +164,40 @@ class ProfilePage extends StatelessWidget {
                         labelText: "Email",
                         prefixIcon: const Icon(Icons.alternate_email, color: Colors.white),
                         filled: true,
-                        fillColor: Theme.of(context).colorScheme.background,
+                        fillColor: Theme.of(context).colorScheme.primaryContainer,
                       ),
                     ),
                     const SizedBox(height: 10),
-                    // Phone (Read-only)
                     TextField(
                       controller: phone,
-                      enabled: false,
+                      enabled: isEdit.value,
+                      keyboardType: TextInputType.phone,
                       decoration: InputDecoration(
                         labelText: "Phone",
                         prefixIcon: const Icon(Icons.phone, color: Colors.white),
                         filled: true,
-                        fillColor: Theme.of(context).colorScheme.background,
+                        fillColor: isEdit.value ? Theme.of(context).colorScheme.background : Theme.of(context).colorScheme.primaryContainer,
                       ),
                     ),
                     const SizedBox(height: 20),
-                    // Edit / Save Button
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         PrimaryButton(
                           btnName: isEdit.value ? 'Save' : 'Edit',
                           icon: isEdit.value ? Icons.save : Icons.edit,
-                          ontap: () {
+                          ontap: () async {
                             if (isEdit.value) {
                               // Save logic here
                               print("Saved Name: ${name.text}");
                               print("Saved About: ${about.text}");
+                              // Update the user object in the controller if needed
+                              await profileController.updateProfile(
+                                name: name.text,
+                                about: about.text,
+                                imagePath: imagePath.value,
+                                phoneNumber: phone.text,
+                              );
                             }
                             isEdit.value = !isEdit.value;
                           },
