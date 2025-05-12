@@ -1,4 +1,5 @@
 import 'package:NegXus/Pages/Auth/AuthPage.dart';
+import 'package:NegXus/Pages/ContactPage/ContactPage.dart';
 import 'package:NegXus/Pages/HomePage/HomePage.dart';
 import 'package:NegXus/Pages/ProfilePage/ProfilePage.dart';
 import 'package:NegXus/Pages/SplashPage/SplashPage.dart';
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
       darkTheme: darkTheme,
       themeMode: ThemeMode.dark,
       getPages: getPath,
-      home: WelcomePage(),
+      home: ContactPage(),
     );
   }
 }
