@@ -8,6 +8,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 
+import '../../Controller/ProfileController.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -16,6 +18,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+  final ProfileController profileController = Get.put(ProfileController());
   @override
   Widget build(BuildContext context) {
     TabController tabController = TabController(length: 3, vsync: this);
@@ -43,7 +46,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
           ),
           IconButton(
-            onPressed: () {
+            onPressed: () async {
+              await profileController.getUserDetails();
               Get.to(ProfilePage());
             },
             icon: Icon(

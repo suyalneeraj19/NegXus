@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:NegXus/Controller/AuthController.dart';
 import 'package:NegXus/Controller/ImagePicker.dart';
 import 'package:NegXus/Controller/ProfileController.dart';
 import 'package:NegXus/Pages/Widgets/PrimaryButton.dart';
@@ -17,7 +18,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final RxBool isEdit = false.obs;
   late final ProfileController profileController;
   late final ImagePickerController imagePickerController;
-
+  late final AuthController authController;
   final TextEditingController name = TextEditingController();
   final TextEditingController email = TextEditingController();
   final TextEditingController phone = TextEditingController();
@@ -30,6 +31,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     profileController = Get.put(ProfileController());
     imagePickerController = Get.put(ImagePickerController());
+    authController = Get.put(AuthController());
 
     // Set initial values
     final user = profileController.currentUser.value;
@@ -61,6 +63,13 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Profile"),
+        actions: [
+          IconButton(
+              onPressed: () {
+                authController.logoutUser();
+              },
+              icon: Icon(Icons.logout))
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(10),
@@ -113,20 +122,22 @@ class _ProfilePageState extends State<ProfilePage> {
                                     borderRadius: BorderRadius.circular(100),
                                   ),
                                   child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(100), // <-- This makes it round
-                                    child: profileController.currentUser.value.profileImage!.startsWith('http')
-                                        ? Image.network(
-                                            profileController.currentUser.value.profileImage!,
-                                            fit: BoxFit.cover,
-                                            height: 200,
-                                            width: 200,
-                                          )
-                                        : Image.file(
-                                            File(profileController.currentUser.value.profileImage!),
-                                            fit: BoxFit.cover,
-                                            height: 200,
-                                            width: 200,
-                                          ),
+                                    borderRadius: BorderRadius.circular(100),
+                                    child: profileController.currentUser.value.profileImage != null
+                                        ? (profileController.currentUser.value.profileImage!.startsWith('http')
+                                            ? Image.network(
+                                                profileController.currentUser.value.profileImage!,
+                                                fit: BoxFit.cover,
+                                                height: 200,
+                                                width: 200,
+                                              )
+                                            : Image.file(
+                                                File(profileController.currentUser.value.profileImage!),
+                                                fit: BoxFit.cover,
+                                                height: 200,
+                                                width: 200,
+                                              ))
+                                        : const Icon(Icons.person, size: 100),
                                   ),
                                 ),
                         ),

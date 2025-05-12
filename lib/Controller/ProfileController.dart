@@ -43,21 +43,25 @@ class ProfileController extends GetxController {
         imageUrl = await uploadImageToCloudinary(imagePath);
       }
 
-      print(imageUrl);
-
+      // Preserve existing values if new ones aren't provided
       final updatedUser = UserModel(
-        name: name,
-        about: about,
-        phoneNumber: phoneNumber,
+        name: name ?? currentUser.value.name,
+        about: about ?? currentUser.value.about,
+        phoneNumber: phoneNumber ?? currentUser.value.phoneNumber,
         profileImage: imageUrl,
+        email: currentUser.value.email,
       );
-      await db.collection("users").doc(auth.currentUser!.uid).set(
-            updatedUser.toJson(),
-          );
+
+      // Update Firestore document (merge true to prevent full overwrite)
+      await db.collection("users").doc(auth.currentUser!.uid).set(updatedUser.toJson(), SetOptions(merge: true));
+
+      // Update local observable
+      currentUser.value = updatedUser;
     } catch (e) {
-      print(e);
+      print("Error updating profile: $e");
+    } finally {
+      isLoading.value = false;
     }
-    isLoading.value = false;
   }
 
   Future<String> uploadImageToCloudinary(String imagePath) async {
