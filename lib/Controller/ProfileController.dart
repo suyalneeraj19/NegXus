@@ -1,7 +1,6 @@
 import 'package:NegXus/Model/UserModel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
@@ -15,17 +14,21 @@ class ProfileController extends GetxController {
 
   Rx<UserModel> currentUser = UserModel().obs;
 
-  void onInit() async {
+  @override
+  void onInit() {
     super.onInit();
-    await getUserDetails();
+    getUserDetails();
   }
 
   Future<void> getUserDetails() async {
-    await db.collection("users").doc(auth.currentUser!.uid).get().then((value) => {
-          currentUser.value = UserModel.fromJson(
-            value.data()!,
-          )
-        });
+    try {
+      final snapshot = await db.collection("users").doc(auth.currentUser!.uid).get();
+      if (snapshot.exists && snapshot.data() != null) {
+        currentUser.value = UserModel.fromJson(snapshot.data()!);
+      }
+    } catch (e) {
+      print("Error fetching user details: $e");
+    }
   }
 
   Future<void> updateProfile({
@@ -43,19 +46,23 @@ class ProfileController extends GetxController {
         imageUrl = await uploadImageToCloudinary(imagePath);
       }
 
-      // Preserve existing values if new ones aren't provided
       final updatedUser = UserModel(
+        id: currentUser.value.id,
         name: name ?? currentUser.value.name,
         about: about ?? currentUser.value.about,
         phoneNumber: phoneNumber ?? currentUser.value.phoneNumber,
         profileImage: imageUrl,
         email: currentUser.value.email,
+        createdAt: currentUser.value.createdAt,
+        status: currentUser.value.status,
+        lastOnlineStatus: DateTime.now().toIso8601String(),
       );
 
-      // Update Firestore document (merge true to prevent full overwrite)
-      await db.collection("users").doc(auth.currentUser!.uid).set(updatedUser.toJson(), SetOptions(merge: true));
+      await db.collection("users").doc(auth.currentUser!.uid).set(
+            updatedUser.toJson(),
+            SetOptions(merge: true),
+          );
 
-      // Update local observable
       currentUser.value = updatedUser;
     } catch (e) {
       print("Error updating profile: $e");
@@ -69,8 +76,8 @@ class ProfileController extends GetxController {
     const uploadPreset = 'flutter_upload';
 
     final url = Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/image/upload');
-
     final file = File(imagePath);
+
     final request = http.MultipartRequest('POST', url)
       ..fields['upload_preset'] = uploadPreset
       ..files.add(await http.MultipartFile.fromPath(
@@ -84,7 +91,7 @@ class ProfileController extends GetxController {
 
     if (res.statusCode == 200) {
       final data = json.decode(res.body);
-      return data['secure_url']; // ← use this URL to store in Firestore or user profile
+      return data['secure_url'];
     } else {
       print('Upload failed: ${res.body}');
       return '';
