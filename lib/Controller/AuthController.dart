@@ -70,4 +70,14 @@ class AuthController extends GetxController {
       print(e);
     }
   }
+
+  Future<void> resetPassword(String email) async {
+    try {
+      await auth.sendPasswordResetEmail(email: email);
+      Get.snackbar("Email sent", "Check your email now");
+    } catch (ex) {
+      print(ex);
+      Get.snackbar("Error", ex.toString());
+    }
+  }
 }

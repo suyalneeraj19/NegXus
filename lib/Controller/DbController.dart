@@ -35,4 +35,14 @@ class Dbcontroller extends GetxController {
     }
     isLoading.value = false;
   }
+
+  Stream<List<UserModel>> get userStream {
+    return db.collection("users").snapshots().map(
+          (event) => event.docs
+              .map(
+                (e) => UserModel.fromJson(e.data()),
+              )
+              .toList(),
+        );
+  }
 }
