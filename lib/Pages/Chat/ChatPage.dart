@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:NegXus/Config/Images.dart';
 import 'package:NegXus/Controller/CallController.dart';
 import 'package:NegXus/Controller/ChatController.dart';
 import 'package:NegXus/Controller/ProfileController.dart';
 import 'package:NegXus/Model/UserModel.dart';
+import 'package:NegXus/Pages/CallPage/AudioCallPage.dart';
+import 'package:NegXus/Pages/CallPage/VideoCallPage.dart';
 import 'package:NegXus/Pages/Chat/ChatBubble.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -138,7 +142,7 @@ class ChatPage extends StatelessWidget {
                             String formattedTime = DateFormat('hh:mm a').format(timestamp);
 
                             return ChatBubble(
-                              message: snapshot.data![index].message!,
+                              sms: snapshot.data![index].message!,
                               imageUrl: snapshot.data![index].imageUrl ?? "",
                               isComming: snapshot.data![index].receiverId == profileController.currentUser.value.id,
                               status: snapshot.data![index].readStatus!,
@@ -188,9 +192,9 @@ class ChatPage extends StatelessWidget {
                 ],
               ),
             ),
-            TypeMessage(
-              userModel: userModel,
-            ),
+            // TypeMessage(
+            //   userModel: userModel,
+            // ),
           ],
         ),
       ),

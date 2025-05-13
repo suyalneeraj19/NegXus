@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: ThemeMode.dark,
-      getPages: getPath,
+      getPages: pagePath,
       home: HomePage(),
     );
   }
