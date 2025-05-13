@@ -49,7 +49,9 @@ class GroupChatPage extends StatelessWidget {
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
           onTap: () {
-            Get.to(GroupInfo(groupModel: groupModel));
+            Get.to(GroupInfo(
+              groupModel: groupModel,
+            ));
           },
           child: Row(
             children: [
@@ -113,7 +115,7 @@ class GroupChatPage extends StatelessWidget {
                             DateTime timestamp = DateTime.parse(snapshot.data![index].timestamp!);
                             String formattedTime = DateFormat('hh:mm a').format(timestamp);
                             return ChatBubble(
-                              sms: snapshot.data![index].message!,
+                              message: snapshot.data![index].message!,
                               imageUrl: snapshot.data![index].imageUrl ?? "",
                               isComming: snapshot.data![index].senderId != profileController.currentUser.value.id,
                               status: "read",

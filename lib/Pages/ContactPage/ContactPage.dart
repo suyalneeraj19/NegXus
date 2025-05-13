@@ -1,7 +1,9 @@
 import 'package:NegXus/Controller/ContactController.dart';
+import 'package:NegXus/Controller/ProfileController.dart';
 import 'package:NegXus/Pages/Chat/ChatPage.dart';
 import 'package:NegXus/Pages/ContactPage/ContactSearch.dart';
 import 'package:NegXus/Pages/ContactPage/NewContactTile.dart';
+import 'package:NegXus/Pages/Groups/NewGroup/NewGroup.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -14,72 +16,71 @@ class ContactPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final RxBool isSearchEnabled = false.obs;
-    final ContactController contactController = Get.put(ContactController());
-    final ChatController chatController = Get.put(ChatController());
+    RxBool isSearchEnable = false.obs;
+    ContactController contactController = Get.put(ContactController());
+    ProfileController profileController = Get.put(ProfileController());
+    ChatController chatController = Get.put(ChatController());
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Select contact"),
+        title: Text("Select contact"),
         actions: [
-          Obx(() => IconButton(
-                icon: isSearchEnabled.value ? const Icon(Icons.close) : const Icon(Icons.search),
-                onPressed: () => isSearchEnabled.value = !isSearchEnabled.value,
-              )),
+          Obx(
+            () => IconButton(
+              onPressed: () {
+                isSearchEnable.value = !isSearchEnable.value;
+              },
+              icon: isSearchEnable.value ? Icon(Icons.close) : Icon(Icons.search),
+            ),
+          )
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(5),
+        padding: const EdgeInsets.all(10),
         child: ListView(
           children: [
-            // 1. Search toggle
-            Obx(() => isSearchEnabled.value ? const ContactSearch() : const SizedBox()),
-
-            const SizedBox(height: 10),
-
-            // 2. New contact / group
+            Obx(
+              () => isSearchEnable.value ? ContactSearch() : SizedBox(),
+            ),
+            SizedBox(height: 10),
             NewContactTile(
-              btnName: "New Contact",
+              btnName: "New contact",
               icon: Icons.person_add,
               ontap: () {},
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             NewContactTile(
               btnName: "New Group",
               icon: Icons.group_add,
-              ontap: () {},
+              ontap: () {
+                Get.to(NewGroup());
+              },
             ),
-
-            const SizedBox(height: 10),
-
-            // 3. Section header
-            Text(
-              "Contacts on NegXus",
-              style: Theme.of(context).textTheme.bodyLarge,
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Text("Contacts on NegXus"),
+              ],
             ),
-            const SizedBox(height: 10),
-
-            // 4. Contacts list
+            SizedBox(height: 10),
             Obx(
               () => Column(
-                children: contactController.userList.map((user) {
-                  final imageUrl = (user.profileImage != null && user.profileImage!.startsWith('http'))
-                      ? user.profileImage!
-                      : AssetsImage.defaultProfileUrl;
-
-                  return InkWell(
-                    onTap: () {
-                      ChatPage(userModel: user);
-                      String roomId = chatController.getRoomId(user.id!);
-                      print(roomId);
-                    },
-                    child: ChatTile(
-                      imageUrl: imageUrl,
-                      name: user.name ?? "User",
-                      lastChat: user.about ?? "Hello",
-                      lastTime: "",
-                    ),
-                  );
-                }).toList(),
+                children: contactController.userList
+                    .map(
+                      (e) => InkWell(
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        onTap: () {
+                          Get.to(ChatPage(userModel: e));
+                        },
+                        child: ChatTile(
+                          imageUrl: e.profileImage ?? AssetsImage.defaultProfileUrl,
+                          name: e.name ?? "User",
+                          lastChat: e.about ?? "Hey there",
+                          lastTime: e.email == profileController.currentUser.value.email ? "You" : "",
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
             )
           ],

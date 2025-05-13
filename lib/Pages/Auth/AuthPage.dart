@@ -9,7 +9,7 @@ class AuthPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(20),
@@ -17,7 +17,7 @@ class AuthPage extends StatelessWidget {
             child: Column(
               children: [
                 WelcomeHeading(),
-                SizedBox(height: 30),
+                SizedBox(height: 60),
                 AuthPageBody(),
               ],
             ),

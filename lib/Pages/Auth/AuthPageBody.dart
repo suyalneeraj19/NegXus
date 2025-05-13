@@ -1,21 +1,14 @@
 import 'package:NegXus/Pages/Auth/LoginForm.dart';
 import 'package:NegXus/Pages/Auth/SignupForm.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_rx/src/rx_types/rx_types.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:get/get.dart';
 
-class AuthPageBody extends StatefulWidget {
+class AuthPageBody extends StatelessWidget {
   const AuthPageBody({super.key});
 
   @override
-  State<AuthPageBody> createState() => _AuthPageBodyState();
-}
-
-class _AuthPageBodyState extends State<AuthPageBody> with TickerProviderStateMixin {
-  final RxBool isLogin = true.obs;
-
-  @override
   Widget build(BuildContext context) {
+    RxBool isLogin = true.obs;
     return Obx(() => AnimatedSize(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,

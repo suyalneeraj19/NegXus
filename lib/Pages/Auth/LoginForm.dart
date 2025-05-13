@@ -1,4 +1,5 @@
 import 'package:NegXus/Controller/AuthController.dart';
+import 'package:NegXus/Pages/Auth/ForgotPassword.dart';
 import 'package:NegXus/Pages/Widgets/PrimaryButton.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

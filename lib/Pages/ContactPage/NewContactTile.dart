@@ -4,12 +4,13 @@ class NewContactTile extends StatelessWidget {
   final String btnName;
   final IconData icon;
   final VoidCallback ontap;
-
   const NewContactTile({super.key, required this.btnName, required this.icon, required this.ontap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
       onTap: ontap,
       child: Container(
         padding: EdgeInsets.all(10),

@@ -1,12 +1,10 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:NegXus/Model/UserModel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
-import 'dart:io';
-import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
-import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
@@ -74,6 +72,11 @@ class ProfileController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  // Method to reset user data on logout
+  void resetUserData() {
+    currentUser.value = UserModel(); // Reset the current user to an empty user model
   }
 
   Future<String> uploadImageToCloudinary(String imagePath) async {
