@@ -1,3 +1,4 @@
+import 'package:NegXus/Config/String.dart';
 import 'package:NegXus/Controller/ChatController.dart';
 import 'package:NegXus/Controller/ProfileController.dart';
 import 'package:NegXus/Model/UserModel.dart';
@@ -15,14 +16,13 @@ class VideoCallPage extends StatelessWidget {
     ProfileController profileController = Get.put(ProfileController());
     ChatController chatController = Get.put(ChatController());
     var callId = chatController.getRoomId(target.id!);
-    // return ZegoUIKitPrebuiltCall(
-    //   appID: ZegoCloudConfig.appId,
-    //   appSign: ZegoCloudConfig.appSign,
-    //   userID: profileController.currentUser.value.id ?? "root",
-    //   userName: profileController.currentUser.value.name ?? "root",
-    //   callID: callId,
-    //   config: ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall(),
-    // );
-    return Container();
+    return ZegoUIKitPrebuiltCall(
+      appID: ZegoCloudConfig.appId,
+      appSign: ZegoCloudConfig.appSign,
+      userID: profileController.currentUser.value.id ?? "root",
+      userName: profileController.currentUser.value.name ?? "root",
+      callID: callId,
+      config: ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall(),
+    );
   }
 }
