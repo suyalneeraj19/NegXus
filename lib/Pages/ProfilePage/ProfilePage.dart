@@ -6,6 +6,7 @@ import 'package:NegXus/Controller/ProfileController.dart';
 import 'package:NegXus/Pages/Widgets/PrimaryButton.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart' as img;
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -65,10 +66,11 @@ class _ProfilePageState extends State<ProfilePage> {
         title: const Text("Profile"),
         actions: [
           IconButton(
-              onPressed: () {
-                authController.logoutUser();
-              },
-              icon: Icon(Icons.logout))
+            onPressed: () {
+              authController.logoutUser();
+            },
+            icon: const Icon(Icons.logout),
+          )
         ],
       ),
       body: SingleChildScrollView(
@@ -92,8 +94,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           () => isEdit.value
                               ? InkWell(
                                   onTap: () async {
-                                    imagePath.value = await imagePickerController.pickImage();
-
+                                    imagePath.value = await imagePickerController.pickImage(img.ImageSource.gallery); // ✅ Fixed here
                                     print("Image picked: ${imagePath.value}");
                                   },
                                   child: Container(
@@ -199,10 +200,6 @@ class _ProfilePageState extends State<ProfilePage> {
                           icon: isEdit.value ? Icons.save : Icons.edit,
                           ontap: () async {
                             if (isEdit.value) {
-                              // Save logic here
-                              print("Saved Name: ${name.text}");
-                              print("Saved About: ${about.text}");
-                              // Update the user object in the controller if needed
                               await profileController.updateProfile(
                                 name: name.text,
                                 about: about.text,
