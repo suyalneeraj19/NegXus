@@ -46,7 +46,7 @@ class NewGroup extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  "Contacts on Sampark",
+                  "Contacts on NegXus",
                   style: Theme.of(context).textTheme.labelMedium,
                 ),
               ],

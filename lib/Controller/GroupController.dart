@@ -104,19 +104,35 @@ class GroupController extends GetxController {
 
   Future<void> sendGroupMessage(String message, String groupId, String imagePath) async {
     isLoading.value = true;
+
+    String trimmedMessage = message.trim();
+    String imageUrl = "";
+
+    if (selectedImagePath.value.isNotEmpty) {
+      imageUrl = await profileController.uploadImageToCloudinary(selectedImagePath.value);
+    }
+
+    // Block sending if both message and image are empty
+    if (trimmedMessage.isEmpty && imageUrl.isEmpty) {
+      isLoading.value = false;
+      errorMessage("Cannot send empty message");
+      return;
+    }
+
     var chatId = uuid.v6();
-    String imageUrl = await profileController.uploadImageToCloudinary(selectedImagePath.value);
+
     var newChat = ChatModel(
       id: chatId,
-      message: message,
+      message: trimmedMessage, // always pass a string, even if empty
       imageUrl: imageUrl,
       senderId: auth.currentUser!.uid,
       senderName: profileController.currentUser.value.name,
+      receiverId: groupId,
       timestamp: DateTime.now().toString(),
     );
-    await db.collection("groups").doc(groupId).collection("messages").doc(chatId).set(
-          newChat.toJson(),
-        );
+
+    await db.collection("groups").doc(groupId).collection("messages").doc(chatId).set(newChat.toJson());
+
     selectedImagePath.value = "";
     isLoading.value = false;
   }
