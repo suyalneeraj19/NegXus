@@ -12,8 +12,12 @@ import 'package:uuid/uuid.dart';
 class GroupController extends GetxController {
   final db = FirebaseFirestore.instance;
   final auth = FirebaseAuth.instance;
+  final uuid = Uuid();
+
+  static const String groupCollection = "groups";
+  static const String messageCollection = "messages";
+
   RxList<UserModel> groupMembers = <UserModel>[].obs;
-  var uuid = Uuid();
   RxBool isLoading = false.obs;
   RxString selectedImagePath = "".obs;
   RxList<GroupModel> groupList = <GroupModel>[].obs;
@@ -35,126 +39,133 @@ class GroupController extends GetxController {
 
   Future<void> createGroup(String groupName, String imagePath) async {
     isLoading.value = true;
-    String groupId = uuid.v6();
-    groupMembers.add(
-      UserModel(
-        id: auth.currentUser!.uid,
-        name: profileController.currentUser.value.name,
-        profileImage: profileController.currentUser.value.profileImage,
-        email: profileController.currentUser.value.email,
-        role: "admin",
-      ),
-    );
     try {
+      final String groupId = uuid.v6();
+
+      // Ensure the current user is not added twice
+      if (!groupMembers.any((u) => u.id == auth.currentUser!.uid)) {
+        groupMembers.add(
+          UserModel(
+            id: auth.currentUser!.uid,
+            name: profileController.currentUser.value.name,
+            profileImage: profileController.currentUser.value.profileImage,
+            email: profileController.currentUser.value.email,
+            role: "admin",
+          ),
+        );
+      }
+
       String imageUrl = await profileController.uploadImageToCloudinary(imagePath);
 
-      await db.collection("groups").doc(groupId).set(
-        {
-          "id": groupId,
-          "name": groupName,
-          "profileUrl": imageUrl,
-          "members": groupMembers.map((e) => e.toJson()).toList(),
-          "createdAt": DateTime.now().toString(),
-          "createdBy": auth.currentUser!.uid,
-          "timeStamp": DateTime.now().toString(),
-        },
-      );
-      getGroups();
+      await db.collection(groupCollection).doc(groupId).set({
+        "id": groupId,
+        "name": groupName,
+        "profileUrl": imageUrl,
+        "members": groupMembers.map((e) => e.toJson()).toList(),
+        "createdAt": DateTime.now().toString(),
+        "createdBy": auth.currentUser!.uid,
+        "timeStamp": DateTime.now().toString(),
+      });
+
+      await getGroups();
       successMessage("Group Created");
       Get.offAll(HomePage());
-      isLoading.value = false;
     } catch (e) {
-      print(e);
+      errorMessage("Failed to create group");
+      print("CreateGroup Error: $e");
+    } finally {
+      isLoading.value = false;
     }
   }
 
   Future<void> getGroups() async {
     isLoading.value = true;
-    List<GroupModel> tempGroup = [];
-    await db.collection('groups').get().then(
-      (value) {
-        tempGroup = value.docs
-            .map(
-              (e) => GroupModel.fromJson(e.data()),
-            )
-            .toList();
-      },
-    );
-    groupList.clear();
-    groupList.value = tempGroup
-        .where(
-          (e) => e.members!.any(
-            (element) => element.id == auth.currentUser!.uid,
-          ),
-        )
-        .toList();
-    isLoading.value = false;
+    try {
+      final snapshot = await db.collection(groupCollection).get();
+      final tempGroup = snapshot.docs.map((e) => GroupModel.fromJson(e.data())).toList();
+
+      groupList.value = tempGroup
+          .where(
+            (e) => e.members!.any((element) => element.id == auth.currentUser!.uid),
+          )
+          .toList();
+    } catch (e) {
+      errorMessage("Failed to load groups");
+      print("GetGroups Error: $e");
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   Stream<List<GroupModel>> getGroupss() {
-    isLoading.value = true;
-    return db.collection('groups').snapshots().map((snapshot) {
-      List<GroupModel> tempGroup = snapshot.docs.map((doc) => GroupModel.fromJson(doc.data())).toList();
-      groupList.clear();
-      groupList.value = tempGroup.where((group) => group.members!.any((member) => member.id == auth.currentUser!.uid)).toList();
-      isLoading.value = false;
-      return groupList;
+    return db.collection(groupCollection).snapshots().map((snapshot) {
+      return snapshot.docs
+          .map((doc) => GroupModel.fromJson(doc.data()))
+          .where((group) => group.members!.any((member) => member.id == auth.currentUser!.uid))
+          .toList();
     });
   }
 
   Future<void> sendGroupMessage(String message, String groupId, String imagePath) async {
     isLoading.value = true;
+    try {
+      final String trimmedMessage = message.trim();
+      String imageUrl = "";
 
-    String trimmedMessage = message.trim();
-    String imageUrl = "";
+      if (selectedImagePath.value.isNotEmpty) {
+        imageUrl = await profileController.uploadImageToCloudinary(selectedImagePath.value);
+      }
 
-    if (selectedImagePath.value.isNotEmpty) {
-      imageUrl = await profileController.uploadImageToCloudinary(selectedImagePath.value);
-    }
+      if (trimmedMessage.isEmpty && imageUrl.isEmpty) {
+        errorMessage("Cannot send empty message");
+        return;
+      }
 
-    // Block sending if both message and image are empty
-    if (trimmedMessage.isEmpty && imageUrl.isEmpty) {
+      final chatId = uuid.v6();
+
+      final newChat = ChatModel(
+        id: chatId,
+        message: trimmedMessage,
+        imageUrl: imageUrl,
+        senderId: auth.currentUser!.uid,
+        senderName: profileController.currentUser.value.name,
+        receiverId: groupId,
+        timestamp: DateTime.now().toString(),
+      );
+
+      await db.collection(groupCollection).doc(groupId).collection(messageCollection).doc(chatId).set(newChat.toJson());
+
+      selectedImagePath.value = "";
+    } catch (e) {
+      errorMessage("Failed to send message");
+      print("SendGroupMessage Error: $e");
+    } finally {
       isLoading.value = false;
-      errorMessage("Cannot send empty message");
-      return;
     }
-
-    var chatId = uuid.v6();
-
-    var newChat = ChatModel(
-      id: chatId,
-      message: trimmedMessage, // always pass a string, even if empty
-      imageUrl: imageUrl,
-      senderId: auth.currentUser!.uid,
-      senderName: profileController.currentUser.value.name,
-      receiverId: groupId,
-      timestamp: DateTime.now().toString(),
-    );
-
-    await db.collection("groups").doc(groupId).collection("messages").doc(chatId).set(newChat.toJson());
-
-    selectedImagePath.value = "";
-    isLoading.value = false;
   }
 
   Stream<List<ChatModel>> getGroupMessages(String groupId) {
-    return db.collection("groups").doc(groupId).collection("messages").orderBy("timestamp", descending: true).snapshots().map(
-          (snapshot) => snapshot.docs
-              .map(
-                (doc) => ChatModel.fromJson(doc.data()),
-              )
-              .toList(),
-        );
+    return db
+        .collection(groupCollection)
+        .doc(groupId)
+        .collection(messageCollection)
+        .orderBy("timestamp", descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => ChatModel.fromJson(doc.data())).toList());
   }
 
   Future<void> addMemberToGroup(String groupId, UserModel user) async {
     isLoading.value = true;
-    await db.collection("groups").doc(groupId).update(
-      {
+    try {
+      await db.collection(groupCollection).doc(groupId).update({
         "members": FieldValue.arrayUnion([user.toJson()]),
-      },
-    );
-    getGroups();
-    isLoading.value = false;
+      });
+      await getGroups();
+    } catch (e) {
+      errorMessage("Failed to add member");
+      print("AddMember Error: $e");
+    } finally {
+      isLoading.value = false;
+    }
   }
 }
