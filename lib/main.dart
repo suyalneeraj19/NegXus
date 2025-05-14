@@ -1,9 +1,3 @@
-import 'package:NegXus/Pages/Auth/AuthPage.dart';
-import 'package:NegXus/Pages/Chat/ChatPage.dart';
-import 'package:NegXus/Pages/ContactPage/ContactPage.dart';
-import 'package:NegXus/Pages/HomePage/HomePage.dart';
-import 'package:NegXus/Pages/ProfilePage/ProfilePage.dart';
-import 'package:NegXus/Pages/SplashPage/SplashPage.dart';
 import 'package:NegXus/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';

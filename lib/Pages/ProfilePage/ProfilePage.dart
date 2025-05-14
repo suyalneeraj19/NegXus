@@ -1,11 +1,9 @@
 import 'dart:io';
-
 import 'package:NegXus/Controller/AuthController.dart';
 import 'package:NegXus/Controller/ImagePicker.dart';
 import 'package:NegXus/Controller/ProfileController.dart';
 import 'package:NegXus/Pages/Widgets/PrimaryButton.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloudinary_url_gen/transformation/source/image_source.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart' as img;

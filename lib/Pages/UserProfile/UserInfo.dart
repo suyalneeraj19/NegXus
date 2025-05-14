@@ -1,7 +1,6 @@
 import 'package:NegXus/Controller/CallController.dart';
 import 'package:NegXus/Model/UserModel.dart';
 import 'package:NegXus/Pages/CallPage/VideoCallPage.dart';
-import 'package:NegXus/Pages/Chat/ChatPage.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
