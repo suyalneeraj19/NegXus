@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
       darkTheme: darkTheme,
       themeMode: ThemeMode.dark,
       getPages: pagePath,
-      home: WelcomePage(),
+      home: ContactPage(),
     );
   }
 }

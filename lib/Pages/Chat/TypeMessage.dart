@@ -28,14 +28,6 @@ class TypeMessage extends StatelessWidget {
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(100), color: Theme.of(context).colorScheme.primaryContainer),
       child: Row(
         children: [
-          Container(
-            width: 30,
-            height: 30,
-            child: SvgPicture.asset(
-              AssetsImage.emojiSVG,
-              width: 25,
-            ),
-          ),
           SizedBox(width: 10),
           Expanded(
             child: TextField(

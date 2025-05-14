@@ -52,21 +52,6 @@ Future<dynamic> ImagePickerBottomSheet(BuildContext context, RxString imagePath,
             ),
           ),
         ),
-        InkWell(
-          onTap: () {},
-          child: Container(
-            height: 70,
-            width: 70,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.background,
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Icon(
-              Icons.play_arrow,
-              size: 30,
-            ),
-          ),
-        )
       ],
     ),
   ));

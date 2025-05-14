@@ -2,6 +2,7 @@ import 'package:NegXus/Config/Images.dart';
 import 'package:NegXus/Controller/AuthController.dart';
 import 'package:NegXus/Controller/ProfileController.dart';
 import 'package:NegXus/Model/UserModel.dart';
+import 'package:NegXus/Pages/ProfilePage/ProfilePage.dart';
 import 'package:NegXus/Pages/UserProfile/UserInfo.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -20,16 +21,6 @@ class UserProfilePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text("Profile"),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Get.toNamed("/updateProfilePage");
-            },
-            icon: Icon(
-              Icons.edit,
-            ),
-          )
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(10),
@@ -39,6 +30,7 @@ class UserProfilePage extends StatelessWidget {
               profileImage: userModel.profileImage ?? AssetsImage.defaultProfileUrl,
               userName: userModel.name ?? "User",
               userEmail: userModel.email ?? "",
+              userModel: userModel,
             ),
             Spacer(),
             ElevatedButton(
