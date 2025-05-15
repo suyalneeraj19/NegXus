@@ -1,3 +1,4 @@
+import 'package:NegXus/Controller/CallController.dart';
 import 'package:NegXus/Controller/ChatController.dart';
 import 'package:NegXus/Controller/ProfileController.dart';
 import 'package:NegXus/Model/UserModel.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
+import 'package:zego_uikit_prebuilt_live_streaming/zego_uikit_prebuilt_live_streaming.dart';
 
 import '../../Config/String.dart';
 

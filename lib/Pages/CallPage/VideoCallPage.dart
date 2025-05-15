@@ -15,12 +15,24 @@ class VideoCallPage extends StatelessWidget {
   Widget build(BuildContext context) {
     ProfileController profileController = Get.put(ProfileController());
     ChatController chatController = Get.put(ChatController());
-    var callId = chatController.getRoomId(target.id!);
+
+    String currentUserId = profileController.currentUser.value.id ?? "root";
+    String currentUserName = profileController.currentUser.value.name ?? "root";
+    String callId = chatController.getRoomId(target.id!);
+
+    // Optional: send call invitation
+    // ZegoUIKitPrebuiltCallInvitationService().sendCallInvitation(
+    //   inviterName: currentUserName,
+    //   invitees: [ZegoUIKitUser(id: target.id!, name: target.name!)],
+    //   callID: callId,
+    //   isVideoCall: true,
+    // );
+
     return ZegoUIKitPrebuiltCall(
       appID: ZegoCloudConfig.appId,
       appSign: ZegoCloudConfig.appSign,
-      userID: profileController.currentUser.value.id ?? "root",
-      userName: profileController.currentUser.value.name ?? "root",
+      userID: currentUserId,
+      userName: currentUserName,
       callID: callId,
       config: ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall(),
     );
