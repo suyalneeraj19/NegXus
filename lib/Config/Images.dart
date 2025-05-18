@@ -2,7 +2,7 @@ class AssetsImage {
   static const iconsPath = "assets/icons";
   static const imagesPath = "assets/Images";
 
-  static const defaultProfileUrl = "https://res.cloudinary.com/dxvnxycz6/image/upload/v1747055039/boy_png_ldix5a.png";
+  static const defaultProfileUrl = "https://res.cloudinary.com/dxvnxycz6/image/upload/v1747535602/user_if1xnm.webp";
   // SVG ICONS ONLY
   static const appIconSVG = "$iconsPath/app_icon.svg";
   static const connSVG = "$iconsPath/conn_icon.svg";

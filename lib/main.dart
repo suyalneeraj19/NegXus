@@ -5,7 +5,7 @@ import 'package:NegXus/Pages/SplashPage/SplashPage.dart';
 import 'package:NegXus/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart'; // 👈 Required for GetMaterialApp
+import 'package:get/get.dart';
 
 import 'package:NegXus/Config/Theme.dart';
 import 'package:NegXus/Pages/Welcome/WelcomePage.dart';
@@ -24,11 +24,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print('Handling background message: ${message.messageId}');
 }
 
-ProfileController profileController = Get.put(ProfileController());
 final navigatorKey = GlobalKey<NavigatorState>();
 
 // Create a Cloudinary instance and set your cloud name.
-
 var cloudinary = Cloudinary.fromStringUrl("cloudinary://119574217634865:cGiIGQLtJiG8ycyVfLzr3thuYzk@dxvnxycz6");
 
 void main() async {
@@ -38,21 +36,30 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  // ✅ Register the CallController so it's active throughout the app
+
   const AndroidInitializationSettings androidInitSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
   final InitializationSettings initSettings = InitializationSettings(android: androidInitSettings);
   await flutterLocalNotificationsPlugin.initialize(initSettings);
-  Get.put(CallController());
+
+  // ✅ Safely register controllers only if not already registered
+  if (!Get.isRegistered<ProfileController>()) {
+    Get.put(ProfileController());
+  }
+  if (!Get.isRegistered<CallController>()) {
+    Get.put(CallController());
+  }
+
+  final profileController = Get.find<ProfileController>();
 
   ZegoUIKitPrebuiltCallInvitationService().setNavigatorKey(navigatorKey);
 
-  // If using plugins, initialize them here as well
   ZegoUIKitPrebuiltCallInvitationService().init(
-    appID: ZegoCloudConfig.appId, // your App ID
-    appSign: ZegoCloudConfig.appSign, // your App Sign
-    userID: profileController.currentUser.value.id ?? '', // your current user's ID
-    userName: profileController.currentUser.value.name ?? '', // your current user's name
+    appID: ZegoCloudConfig.appId,
+    appSign: ZegoCloudConfig.appSign,
+    userID: profileController.currentUser.value.id ?? '',
+    userName: profileController.currentUser.value.name ?? '',
     plugins: [ZegoUIKitSignalingPlugin()],
   );
 
