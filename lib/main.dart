@@ -1,6 +1,3 @@
-import 'package:NegXus/Config/String.dart';
-import 'package:NegXus/Controller/CallController.dart';
-import 'package:NegXus/Controller/ProfileController.dart';
 import 'package:NegXus/Pages/SplashPage/SplashPage.dart';
 import 'package:NegXus/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -42,26 +39,7 @@ void main() async {
   const AndroidInitializationSettings androidInitSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
   final InitializationSettings initSettings = InitializationSettings(android: androidInitSettings);
   await flutterLocalNotificationsPlugin.initialize(initSettings);
-
-  // ✅ Safely register controllers only if not already registered
-  if (!Get.isRegistered<ProfileController>()) {
-    Get.put(ProfileController());
-  }
-  if (!Get.isRegistered<CallController>()) {
-    Get.put(CallController());
-  }
-
-  final profileController = Get.find<ProfileController>();
-
   ZegoUIKitPrebuiltCallInvitationService().setNavigatorKey(navigatorKey);
-
-  ZegoUIKitPrebuiltCallInvitationService().init(
-    appID: ZegoCloudConfig.appId,
-    appSign: ZegoCloudConfig.appSign,
-    userID: profileController.currentUser.value.id ?? '',
-    userName: profileController.currentUser.value.name ?? '',
-    plugins: [ZegoUIKitSignalingPlugin()],
-  );
 
   await ZegoUIKit().initLog();
 
@@ -79,7 +57,7 @@ class MyApp extends StatelessWidget {
       darkTheme: darkTheme,
       themeMode: ThemeMode.dark,
       getPages: pagePath,
-      home: Splashpage(),
+      home: const Splashpage(),
     );
   }
 }
