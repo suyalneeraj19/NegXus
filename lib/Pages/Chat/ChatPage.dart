@@ -22,43 +22,26 @@ class ChatPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ChatController chatController = Get.put(ChatController());
-    TextEditingController messageController = TextEditingController();
-    ProfileController profileController = Get.put(ProfileController());
-    CallController callController = Get.put(CallController());
+    final ChatController chatController = Get.put(ChatController());
+    final ProfileController profileController = Get.put(ProfileController());
+    final CallController callController = Get.put(CallController());
+    final TextEditingController messageController = TextEditingController();
+
     return Scaffold(
       appBar: AppBar(
-        leading: InkWell(
-          splashColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-          onTap: () {
-            Get.to(UserProfilePage(
-              userModel: userModel,
-            ));
-          },
+        leading: GestureDetector(
+          onTap: () => Get.to(() => UserProfilePage(userModel: userModel)),
           child: Padding(
             padding: const EdgeInsets.all(5),
-            child: Container(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(100),
-                child: CachedNetworkImage(
-                  imageUrl: userModel.profileImage ?? AssetsImage.defaultProfileUrl,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => CircularProgressIndicator(),
-                  errorWidget: (context, url, error) => Icon(Icons.error),
-                ),
+            child: CircleAvatar(
+              backgroundImage: CachedNetworkImageProvider(
+                userModel.profileImage ?? AssetsImage.defaultProfileUrl,
               ),
             ),
           ),
         ),
-        title: InkWell(
-          splashColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-          onTap: () {
-            Get.to(UserProfilePage(
-              userModel: userModel,
-            ));
-          },
+        title: GestureDetector(
+          onTap: () => Get.to(() => UserProfilePage(userModel: userModel)),
           child: Row(
             children: [
               Column(
@@ -68,17 +51,14 @@ class ChatPage extends StatelessWidget {
                   StreamBuilder(
                     stream: chatController.getStatus(userModel.id!),
                     builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Text("........");
-                      } else {
-                        return Text(
-                          snapshot.data!.status ?? "",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: snapshot.data!.status == "Online" ? Colors.green : Colors.grey,
-                          ),
-                        );
-                      }
+                      final status = snapshot.data?.status ?? "Unknown";
+                      return Text(
+                        status,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: status == "Online" ? Colors.green : Colors.grey,
+                        ),
+                      );
                     },
                   )
                 ],
@@ -88,27 +68,23 @@ class ChatPage extends StatelessWidget {
         ),
         actions: [
           IconButton(
+            icon: Icon(Icons.phone),
             onPressed: () {
-              Get.to(AudioCallPage(target: userModel));
+              Get.to(() => AudioCallPage(target: userModel));
               callController.callAction(userModel, profileController.currentUser.value, "audio");
             },
-            icon: Icon(
-              Icons.phone,
-            ),
           ),
           IconButton(
+            icon: Icon(Icons.video_call),
             onPressed: () {
-              Get.to(VideoCallPage(target: userModel));
+              Get.to(() => VideoCallPage(target: userModel));
               callController.callAction(userModel, profileController.currentUser.value, "video");
             },
-            icon: Icon(
-              Icons.video_call,
-            ),
-          )
+          ),
         ],
       ),
       body: Padding(
-        padding: EdgeInsets.only(bottom: 10, top: 10, left: 10, right: 10),
+        padding: const EdgeInsets.all(10),
         child: Column(
           children: [
             Expanded(
@@ -117,44 +93,50 @@ class ChatPage extends StatelessWidget {
                   StreamBuilder(
                     stream: chatController.getMessages(userModel.id!),
                     builder: (context, snapshot) {
-                      var roomid = chatController.getRoomId(userModel.id!);
-                      chatController.markMessagesAsRead(roomid!);
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      }
-                      if (snapshot.hasError) {
-                        return Center(
-                          child: Text("Error: ${snapshot.error}"),
-                        );
-                      }
-                      if (snapshot.data == null) {
-                        return const Center(
-                          child: Text("No Messages"),
-                        );
-                      } else {
-                        return ListView.builder(
-                          reverse: true,
-                          itemCount: snapshot.data!.length,
-                          itemBuilder: (context, index) {
-                            DateTime timestamp = DateTime.parse(snapshot.data![index].timestamp!);
-                            String formattedTime = DateFormat('hh:mm a').format(timestamp);
+                      final roomId = chatController.getRoomId(userModel.id!);
+                      chatController.markMessagesAsRead(roomId!);
 
-                            return ChatBubble(
-                              message: snapshot.data![index].message!,
-                              imageUrl: snapshot.data![index].imageUrl ?? "",
-                              isComming: snapshot.data![index].receiverId == profileController.currentUser.value.id,
-                              status: snapshot.data![index].readStatus!,
-                              time: formattedTime,
-                            );
-                          },
-                        );
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
                       }
+
+                      if (snapshot.hasError) {
+                        return Center(child: Text("Error: ${snapshot.error}"));
+                      }
+
+                      final messages = snapshot.data;
+                      if (messages == null || messages.isEmpty) {
+                        return const Center(child: Text("No Messages"));
+                      }
+
+                      return ListView.builder(
+                        reverse: true,
+                        itemCount: messages.length,
+                        itemBuilder: (context, index) {
+                          final msg = messages[index];
+                          final timestamp = DateTime.parse(msg.timestamp!);
+                          final formattedTime = DateFormat('hh:mm a').format(timestamp);
+
+                          bool isComming = msg.receiverId == profileController.currentUser.value.id;
+                          String profileImage = isComming
+                              ? userModel.profileImage ?? AssetsImage.defaultProfileUrl
+                              : profileController.currentUser.value.profileImage ?? AssetsImage.defaultProfileUrl;
+
+                          return ChatBubble(
+                            message: msg.message ?? "",
+                            imageUrl: msg.imageUrl ?? "",
+                            isComming: isComming,
+                            status: msg.readStatus ?? "",
+                            time: formattedTime,
+                            profileImage: profileImage,
+                          );
+                        },
+                      );
                     },
                   ),
-                  Obx(
-                    () => (chatController.selectedImagePath.value != "")
+                  Obx(() {
+                    final imagePath = chatController.selectedImagePath.value;
+                    return imagePath.isNotEmpty
                         ? Positioned(
                             bottom: 0,
                             left: 0,
@@ -162,38 +144,35 @@ class ChatPage extends StatelessWidget {
                             child: Stack(
                               children: [
                                 Container(
-                                  margin: EdgeInsets.only(bottom: 10),
+                                  margin: const EdgeInsets.only(bottom: 10),
+                                  height: 500,
                                   decoration: BoxDecoration(
                                     image: DecorationImage(
-                                      image: FileImage(
-                                        File(chatController.selectedImagePath.value),
-                                      ),
+                                      image: FileImage(File(imagePath)),
                                       fit: BoxFit.contain,
                                     ),
                                     color: Theme.of(context).colorScheme.primaryContainer,
                                     borderRadius: BorderRadius.circular(15),
                                   ),
-                                  height: 500,
                                 ),
                                 Positioned(
                                   right: 0,
                                   child: IconButton(
-                                    onPressed: () {
-                                      chatController.selectedImagePath.value = "";
-                                    },
                                     icon: Icon(Icons.close),
+                                    onPressed: () => chatController.selectedImagePath.value = "",
                                   ),
                                 ),
                               ],
                             ),
                           )
-                        : Container(),
-                  )
+                        : SizedBox.shrink();
+                  }),
                 ],
               ),
             ),
             TypeMessage(
               userModel: userModel,
+              messageController: messageController,
             ),
           ],
         ),

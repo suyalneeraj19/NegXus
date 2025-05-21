@@ -1,0 +1,2 @@
+D:/app/android/app/.cxx/Debug/5m5p1i57/arm64-v8a/CMakeFiles/edit_cache.dir
+D:/app/android/app/.cxx/Debug/5m5p1i57/arm64-v8a/CMakeFiles/rebuild_cache.dir

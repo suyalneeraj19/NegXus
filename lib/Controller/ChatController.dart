@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:NegXus/Controller/ContactController.dart';
 import 'package:NegXus/Controller/ProfileController.dart';
 import 'package:NegXus/Model/CallModel.dart';
@@ -7,6 +10,8 @@ import 'package:NegXus/Model/UserModel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
@@ -14,41 +19,29 @@ class ChatController extends GetxController {
   final auth = FirebaseAuth.instance;
   final db = FirebaseFirestore.instance;
   RxBool isLoading = false.obs;
+  RxBool isRecording = false.obs;
   var uuid = Uuid();
   RxString selectedImagePath = "".obs;
+  RxString selectedAudioPath = "".obs;
+
   @override
   ProfileController profileController = Get.put(ProfileController());
   ContactController contactController = Get.put(ContactController());
+
   String getRoomId(String targetUserId) {
     String currentUserId = auth.currentUser!.uid;
-    if (currentUserId[0].codeUnitAt(0) > targetUserId[0].codeUnitAt(0)) {
-      return currentUserId + targetUserId;
-    } else {
-      return targetUserId + currentUserId;
-    }
+    return currentUserId.compareTo(targetUserId) > 0 ? currentUserId + targetUserId : targetUserId + currentUserId;
   }
 
   UserModel getSender(UserModel currentUser, UserModel targetUser) {
-    String currentUserId = currentUser.id!;
-    String targetUserId = targetUser.id!;
-    if (currentUserId[0].codeUnitAt(0) > targetUserId[0].codeUnitAt(0)) {
-      return currentUser;
-    } else {
-      return targetUser;
-    }
+    return currentUser.id!.compareTo(targetUser.id!) > 0 ? currentUser : targetUser;
   }
 
   UserModel getReciver(UserModel currentUser, UserModel targetUser) {
-    String currentUserId = currentUser.id!;
-    String targetUserId = targetUser.id!;
-    if (currentUserId[0].codeUnitAt(0) > targetUserId[0].codeUnitAt(0)) {
-      return targetUser;
-    } else {
-      return currentUser;
-    }
+    return currentUser.id!.compareTo(targetUser.id!) > 0 ? targetUser : currentUser;
   }
 
-  Future<void> sendMessage(String targetUserId, String message, UserModel targetUser) async {
+  Future<void> sendMessage(String targetUserId, String message, UserModel targetUser, {String? audioUrl}) async {
     isLoading.value = true;
     String chatId = uuid.v6();
     String roomId = getRoomId(targetUserId);
@@ -62,6 +55,7 @@ class ChatController extends GetxController {
     if (selectedImagePath.value.isNotEmpty) {
       imageUrl.value = await profileController.uploadImageToCloudinary(selectedImagePath.value);
     }
+
     var newChat = ChatModel(
       id: chatId,
       message: message,
@@ -69,7 +63,7 @@ class ChatController extends GetxController {
       senderId: auth.currentUser!.uid,
       receiverId: targetUserId,
       senderName: profileController.currentUser.value.name,
-      timestamp: DateTime.now().toString(),
+      timestamp: timestamp.toString(),
       readStatus: "unread",
     );
 
@@ -79,17 +73,14 @@ class ChatController extends GetxController {
       lastMessageTimestamp: nowTime,
       sender: sender,
       receiver: receiver,
-      timestamp: DateTime.now().toString(),
+      timestamp: timestamp.toString(),
       unReadMessNo: 0,
     );
+
     try {
-      await db.collection("chats").doc(roomId).collection("messages").doc(chatId).set(
-            newChat.toJson(),
-          );
+      await db.collection("chats").doc(roomId).collection("messages").doc(chatId).set(newChat.toJson());
       selectedImagePath.value = "";
-      await db.collection("chats").doc(roomId).set(
-            roomDetails.toJson(),
-          );
+      await db.collection("chats").doc(roomId).set(roomDetails.toJson());
       await contactController.saveContact(targetUser);
     } catch (e) {
       print(e);
@@ -99,36 +90,30 @@ class ChatController extends GetxController {
 
   Stream<List<ChatModel>> getMessages(String targetUserId) {
     String roomId = getRoomId(targetUserId);
-    return db.collection("chats").doc(roomId).collection("messages").orderBy("timestamp", descending: true).snapshots().map(
-          (snapshot) => snapshot.docs
-              .map(
-                (doc) => ChatModel.fromJson(doc.data()),
-              )
-              .toList(),
-        );
+    return db
+        .collection("chats")
+        .doc(roomId)
+        .collection("messages")
+        .orderBy("timestamp", descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => ChatModel.fromJson(doc.data())).toList());
   }
 
   Stream<UserModel> getStatus(String uid) {
-    return db.collection('users').doc(uid).snapshots().map(
-      (event) {
-        return UserModel.fromJson(event.data()!);
-      },
-    );
+    return db.collection('users').doc(uid).snapshots().map((event) => UserModel.fromJson(event.data()!));
   }
 
   Stream<List<CallModel>> getCalls() {
-    return db.collection("users").doc(auth.currentUser!.uid).collection("calls").orderBy("timestamp", descending: true).snapshots().map(
-          (snapshot) => snapshot.docs
-              .map(
-                (doc) => CallModel.fromJson(doc.data()),
-              )
-              .toList(),
-        );
+    return db
+        .collection("users")
+        .doc(auth.currentUser!.uid)
+        .collection("calls")
+        .orderBy("timestamp", descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => CallModel.fromJson(doc.data())).toList());
   }
 
-  Stream<int> getUnreadMessageCount(
-    String roomId,
-  ) {
+  Stream<int> getUnreadMessageCount(String roomId) {
     return db
         .collection("chats")
         .doc(roomId)

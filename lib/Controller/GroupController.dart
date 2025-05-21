@@ -20,8 +20,10 @@ class GroupController extends GetxController {
   RxList<UserModel> groupMembers = <UserModel>[].obs;
   RxBool isLoading = false.obs;
   RxString selectedImagePath = "".obs;
+  RxString selectedAudioPath = "".obs;
   RxList<GroupModel> groupList = <GroupModel>[].obs;
   ProfileController profileController = Get.put(ProfileController());
+  RxMap<String, String> userIdToProfileImage = <String, String>{}.obs;
 
   @override
   void onInit() {
@@ -42,68 +44,86 @@ class GroupController extends GetxController {
     try {
       final String groupId = uuid.v6();
 
-      // Ensure the current user is not added twice
-      if (!groupMembers.any((u) => u.id == auth.currentUser!.uid)) {
-        groupMembers.add(
-          UserModel(
-            id: auth.currentUser!.uid,
-            name: profileController.currentUser.value.name,
-            profileImage: profileController.currentUser.value.profileImage,
-            email: profileController.currentUser.value.email,
-            role: "admin",
-          ),
-        );
-      }
+      groupMembers.removeWhere((u) => u.id == auth.currentUser!.uid);
+      groupMembers.add(
+        UserModel(
+          id: auth.currentUser!.uid,
+          name: profileController.currentUser.value.name,
+          profileImage: profileController.currentUser.value.profileImage,
+          email: profileController.currentUser.value.email,
+          role: "admin",
+        ),
+      );
 
-      String imageUrl = await profileController.uploadImageToCloudinary(imagePath);
+      String imageUrl = "";
+      if (imagePath.isNotEmpty) {
+        imageUrl = await profileController.uploadImageToCloudinary(imagePath);
+      }
 
       await db.collection(groupCollection).doc(groupId).set({
         "id": groupId,
         "name": groupName,
         "profileUrl": imageUrl,
         "members": groupMembers.map((e) => e.toJson()).toList(),
-        "createdAt": DateTime.now().toString(),
+        "membersIds": groupMembers.map((e) => e.id).toList(),
+        "createdAt": FieldValue.serverTimestamp(),
         "createdBy": auth.currentUser!.uid,
-        "timeStamp": DateTime.now().toString(),
+        "timeStamp": FieldValue.serverTimestamp(),
       });
 
+      groupMembers.clear();
+      selectedImagePath.value = "";
       await getGroups();
       successMessage("Group Created");
       Get.offAll(HomePage());
     } catch (e) {
       errorMessage("Failed to create group");
-      print("CreateGroup Error: $e");
+      print("CreateGroup Error: ${e.toString()}");
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  void buildUserIdToProfileImageMap(List<UserModel> members) {
+    userIdToProfileImage.clear();
+    for (var user in members) {
+      if (user.id != null) {
+        userIdToProfileImage[user.id!] = user.profileImage ?? "";
+      }
+    }
+  }
+
+  Future<void> refreshAllGroupUserImages() async {
+    for (var group in groupList) {
+      buildUserIdToProfileImageMap(group.members ?? []);
     }
   }
 
   Future<void> getGroups() async {
     isLoading.value = true;
     try {
-      final snapshot = await db.collection(groupCollection).get();
-      final tempGroup = snapshot.docs.map((e) => GroupModel.fromJson(e.data())).toList();
+      final snapshot = await db.collection(groupCollection).where("membersIds", arrayContains: auth.currentUser!.uid).get();
 
-      groupList.value = tempGroup
-          .where(
-            (e) => e.members!.any((element) => element.id == auth.currentUser!.uid),
-          )
-          .toList();
+      final tempGroup = snapshot.docs.map((e) => GroupModel.fromJson(e.data())).toList();
+      groupList.value = tempGroup;
+
+      if (groupList.isNotEmpty) {
+        buildUserIdToProfileImageMap(groupList.first.members!);
+      }
     } catch (e) {
       errorMessage("Failed to load groups");
-      print("GetGroups Error: $e");
+      print("GetGroups Error: ${e.toString()}");
     } finally {
       isLoading.value = false;
     }
   }
 
   Stream<List<GroupModel>> getGroupss() {
-    return db.collection(groupCollection).snapshots().map((snapshot) {
-      return snapshot.docs
-          .map((doc) => GroupModel.fromJson(doc.data()))
-          .where((group) => group.members!.any((member) => member.id == auth.currentUser!.uid))
-          .toList();
-    });
+    return db
+        .collection(groupCollection)
+        .where("membersIds", arrayContains: auth.currentUser!.uid)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => GroupModel.fromJson(doc.data())).toList());
   }
 
   Future<void> sendGroupMessage(String message, String groupId, String imagePath) async {
@@ -111,12 +131,17 @@ class GroupController extends GetxController {
     try {
       final String trimmedMessage = message.trim();
       String imageUrl = "";
+      String audioUrl = "";
 
       if (selectedImagePath.value.isNotEmpty) {
-        imageUrl = await profileController.uploadImageToCloudinary(selectedImagePath.value);
+        imageUrl = await profileController.uploadFileToCloudinary(selectedImagePath.value, resourceType: "image");
       }
 
-      if (trimmedMessage.isEmpty && imageUrl.isEmpty) {
+      if (selectedAudioPath.value.isNotEmpty) {
+        audioUrl = await profileController.uploadFileToCloudinary(selectedAudioPath.value, resourceType: "audio");
+      }
+
+      if (trimmedMessage.isEmpty && imageUrl.isEmpty && audioUrl.isEmpty) {
         errorMessage("Cannot send empty message");
         return;
       }
@@ -127,18 +152,23 @@ class GroupController extends GetxController {
         id: chatId,
         message: trimmedMessage,
         imageUrl: imageUrl,
+        audioUrl: audioUrl,
         senderId: auth.currentUser!.uid,
         senderName: profileController.currentUser.value.name,
         receiverId: groupId,
         timestamp: DateTime.now().toString(),
       );
 
-      await db.collection(groupCollection).doc(groupId).collection(messageCollection).doc(chatId).set(newChat.toJson());
+      await db.collection(groupCollection).doc(groupId).collection(messageCollection).doc(chatId).set({
+        ...newChat.toJson(),
+        "timestamp": FieldValue.serverTimestamp(),
+      });
 
       selectedImagePath.value = "";
+      selectedAudioPath.value = "";
     } catch (e) {
       errorMessage("Failed to send message");
-      print("SendGroupMessage Error: $e");
+      print("SendGroupMessage Error: ${e.toString()}");
     } finally {
       isLoading.value = false;
     }
@@ -157,13 +187,24 @@ class GroupController extends GetxController {
   Future<void> addMemberToGroup(String groupId, UserModel user) async {
     isLoading.value = true;
     try {
+      final doc = await db.collection(groupCollection).doc(groupId).get();
+      final existingMembers = List<Map<String, dynamic>>.from(doc['members']);
+      final existingMemberIds = List<String>.from(doc['membersIds']);
+
+      if (existingMemberIds.contains(user.id)) {
+        errorMessage("User already in group");
+        return;
+      }
+
       await db.collection(groupCollection).doc(groupId).update({
         "members": FieldValue.arrayUnion([user.toJson()]),
+        "membersIds": FieldValue.arrayUnion([user.id]),
       });
+
       await getGroups();
     } catch (e) {
       errorMessage("Failed to add member");
-      print("AddMember Error: $e");
+      print("AddMember Error: ${e.toString()}");
     } finally {
       isLoading.value = false;
     }

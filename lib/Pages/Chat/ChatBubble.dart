@@ -9,6 +9,7 @@ class ChatBubble extends StatelessWidget {
   final String time;
   final String status;
   final String imageUrl;
+  final String profileImage;
 
   const ChatBubble({
     super.key,
@@ -17,8 +18,10 @@ class ChatBubble extends StatelessWidget {
     required this.time,
     required this.status,
     required this.imageUrl,
+    required this.profileImage,
   });
 
+  @override
   @override
   Widget build(BuildContext context) {
     final Color incomingColor = Color(0xFFFFE6E6);
@@ -26,74 +29,106 @@ class ChatBubble extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: isComming ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment: isComming ? MainAxisAlignment.start : MainAxisAlignment.end,
         children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.sizeOf(context).width / 1.3,
+          if (isComming)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: CircleAvatar(
+                radius: 16,
+                backgroundImage: CachedNetworkImageProvider(profileImage),
+                onBackgroundImageError: (_, __) {
+                  // Handle image error if needed
+                },
+              ),
             ),
-            decoration: BoxDecoration(
-              color: isComming ? incomingColor : outgoingColor,
-              borderRadius: isComming
-                  ? const BorderRadius.only(
-                      topLeft: Radius.circular(10),
-                      topRight: Radius.circular(10),
-                      bottomLeft: Radius.circular(0),
-                      bottomRight: Radius.circular(10),
-                    )
-                  : const BorderRadius.only(
-                      topLeft: Radius.circular(10),
-                      topRight: Radius.circular(10),
-                      bottomLeft: Radius.circular(10),
-                      bottomRight: Radius.circular(0),
-                    ),
-            ),
-            child: imageUrl == ""
-                ? Text(message)
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => const CircularProgressIndicator(),
-                          errorWidget: (context, url, error) => const Icon(Icons.error),
-                        ),
-                      ),
-                      message == "" ? Container() : const SizedBox(height: 10),
-                      message == "" ? Container() : Text(message),
-                    ],
+          Flexible(
+            child: Column(
+              crossAxisAlignment: isComming ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.sizeOf(context).width / 1.3,
                   ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: isComming ? MainAxisAlignment.start : MainAxisAlignment.end,
-            children: [
-              isComming
-                  ? Text(
-                      time,
-                      style: Theme.of(context).textTheme.labelMedium,
-                    )
-                  : Row(
-                      children: [
-                        Text(
-                          time,
-                          style: Theme.of(context).textTheme.labelMedium,
+                  decoration: BoxDecoration(
+                    color: isComming ? incomingColor : outgoingColor,
+                    borderRadius: isComming
+                        ? const BorderRadius.only(
+                            topLeft: Radius.circular(10),
+                            topRight: Radius.circular(10),
+                            bottomLeft: Radius.circular(0),
+                            bottomRight: Radius.circular(10),
+                          )
+                        : const BorderRadius.only(
+                            topLeft: Radius.circular(10),
+                            topRight: Radius.circular(10),
+                            bottomLeft: Radius.circular(10),
+                            bottomRight: Radius.circular(0),
+                          ),
+                  ),
+                  child: imageUrl == ""
+                      ? Text(message)
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: CachedNetworkImage(
+                                imageUrl: imageUrl,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => const CircularProgressIndicator(),
+                                errorWidget: (context, url, error) => const Icon(Icons.error),
+                              ),
+                            ),
+                            message == "" ? Container() : const SizedBox(height: 10),
+                            message == "" ? Container() : Text(message),
+                          ],
                         ),
-                        const SizedBox(width: 10),
-                        SvgPicture.asset(
-                          AssetsImage.statusSVG,
-                          color: status == "read" ? Colors.green : Colors.grey,
-                          width: 20,
-                        )
-                      ],
-                    ),
-            ],
-          )
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: isComming ? MainAxisAlignment.start : MainAxisAlignment.end,
+                  children: [
+                    if (isComming)
+                      Text(
+                        time,
+                        style: Theme.of(context).textTheme.labelMedium,
+                      )
+                    else
+                      Row(
+                        children: [
+                          Text(
+                            time,
+                            style: Theme.of(context).textTheme.labelMedium,
+                          ),
+                          const SizedBox(width: 10),
+                          SvgPicture.asset(
+                            AssetsImage.statusSVG,
+                            color: status == "read" ? Colors.green : Colors.grey,
+                            width: 20,
+                          )
+                        ],
+                      ),
+                  ],
+                )
+              ],
+            ),
+          ),
+          if (!isComming)
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: CircleAvatar(
+                radius: 16,
+                backgroundImage: CachedNetworkImageProvider(profileImage),
+                onBackgroundImageError: (_, __) {
+                  // Handle image error if needed
+                  AssetsImage.defaultProfileUrl;
+                },
+              ),
+            ),
         ],
       ),
     );
