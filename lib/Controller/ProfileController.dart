@@ -77,59 +77,47 @@ class ProfileController extends GetxController {
     currentUser.value = UserModel(); // Reset the current user to an empty user model
   }
 
-  Future<String> uploadFileToCloudinary(String filePath, {required String resourceType}) async {
+  Future<String> uploadFileToCloudinary(String filePath, String resourceType, String fileType) async {
     const cloudName = 'dxvnxycz6';
     const uploadPreset = 'flutter_upload';
 
     final url = Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/$resourceType/upload');
     final file = File(filePath);
 
-    final mimeType = resourceType == "audio" ? 'mpeg' : 'jpeg';
+    try {
+      final request = http.MultipartRequest('POST', url)
+        ..fields['upload_preset'] = uploadPreset
+        ..files.add(await http.MultipartFile.fromPath(
+          'file',
+          file.path,
+          contentType: MediaType(resourceType, fileType),
+        ));
 
-    final request = http.MultipartRequest('POST', url)
-      ..fields['upload_preset'] = uploadPreset
-      ..files.add(await http.MultipartFile.fromPath(
-        'file',
-        file.path,
-        contentType: MediaType(resourceType, mimeType),
-      ));
+      final response = await request.send();
+      final res = await http.Response.fromStream(response);
 
-    final response = await request.send();
-    final res = await http.Response.fromStream(response);
-
-    if (res.statusCode == 200) {
-      final data = json.decode(res.body);
-      return data['secure_url'];
-    } else {
-      print('Upload failed: ${res.body}');
+      if (res.statusCode == 200) {
+        final data = json.decode(res.body);
+        return data['secure_url'];
+      } else {
+        print('Upload failed: ${res.body}');
+        return '';
+      }
+    } catch (e) {
+      print('Upload error: $e');
       return '';
     }
   }
 
   Future<String> uploadImageToCloudinary(String imagePath) async {
-    const cloudName = 'dxvnxycz6';
-    const uploadPreset = 'flutter_upload';
+    return await uploadFileToCloudinary(imagePath, "image", "jpeg");
+  }
 
-    final url = Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/image/upload');
-    final file = File(imagePath);
+  Future<String> uploadAudioToCloudinary(String audioPath) async {
+    return await uploadFileToCloudinary(audioPath, "audio", "mpeg");
+  }
 
-    final request = http.MultipartRequest('POST', url)
-      ..fields['upload_preset'] = uploadPreset
-      ..files.add(await http.MultipartFile.fromPath(
-        'file',
-        file.path,
-        contentType: MediaType('image', 'jpeg'),
-      ));
-
-    final response = await request.send();
-    final res = await http.Response.fromStream(response);
-
-    if (res.statusCode == 200) {
-      final data = json.decode(res.body);
-      return data['secure_url'];
-    } else {
-      print('Upload failed: ${res.body}');
-      return '';
-    }
+  Future<String> uploadVideoToCloudinary(String videoPath) async {
+    return await uploadFileToCloudinary(videoPath, "video", "mp4");
   }
 }

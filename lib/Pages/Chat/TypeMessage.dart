@@ -18,7 +18,9 @@ class TypeMessage extends StatelessWidget {
   Widget build(BuildContext context) {
     final ChatController chatController = Get.find();
     final ImagePickerController imagePickerController = Get.put(ImagePickerController());
+
     final RxString message = "".obs;
+    final RxString videoPath = "".obs; // Track video path
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
@@ -41,38 +43,44 @@ class TypeMessage extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          Obx(
-            () => message.value != "" || chatController.selectedImagePath.value != ""
-                ? InkWell(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    onTap: () {
-                      if (messageController.text.isNotEmpty || chatController.selectedImagePath.value.isNotEmpty) {
-                        chatController.sendMessage(userModel.id!, messageController.text, userModel);
-                        messageController.clear();
-                        message.value = "";
-                      }
-                    },
-                    child: Container(
-                      width: 30,
-                      height: 30,
-                      child: chatController.isLoading.value
-                          ? CircularProgressIndicator()
-                          : SvgPicture.asset(
-                              AssetsImage.sendSVG,
-                              width: 25,
-                            ),
-                    ),
-                  )
-                : Container(
+          Obx(() => (chatController.selectedImagePath.value.isEmpty && videoPath.value.isEmpty)
+              ? InkWell(
+                  onTap: () {
+                    ImagePickerBottomSheet(
+                      context,
+                      chatController.selectedImagePath,
+                      videoPath,
+                      imagePickerController,
+                    );
+                  },
+                  child: SvgPicture.asset(AssetsImage.gallerySVG, width: 30, height: 30),
+                )
+              : const SizedBox()),
+          const SizedBox(width: 10),
+          Obx(() => (message.value.isNotEmpty || chatController.selectedImagePath.value.isNotEmpty || videoPath.value.isNotEmpty)
+              ? InkWell(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  onTap: () {
+                    chatController.sendMessage(
+                      userModel.id!,
+                      messageController.text,
+                      userModel,
+                      videoPath: videoPath.value,
+                    );
+                    messageController.clear();
+                    message.value = "";
+                    videoPath.value = "";
+                  },
+                  child: SizedBox(
                     width: 30,
                     height: 30,
-                    child: SvgPicture.asset(
-                      AssetsImage.micSVG,
-                      width: 25,
-                    ),
+                    child: chatController.isLoading.value
+                        ? const CircularProgressIndicator()
+                        : SvgPicture.asset(AssetsImage.sendSVG, width: 25),
                   ),
-          ),
+                )
+              : SvgPicture.asset(AssetsImage.micSVG, width: 25)),
         ],
       ),
     );

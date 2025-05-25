@@ -41,8 +41,15 @@ class ChatController extends GetxController {
     return currentUser.id!.compareTo(targetUser.id!) > 0 ? targetUser : currentUser;
   }
 
-  Future<void> sendMessage(String targetUserId, String message, UserModel targetUser, {String? audioUrl}) async {
+  Future<void> sendMessage(
+    String targetUserId,
+    String message,
+    UserModel targetUser, {
+    String? audioUrl,
+    String? videoPath, // New optional video path
+  }) async {
     isLoading.value = true;
+
     String chatId = uuid.v6();
     String roomId = getRoomId(targetUserId);
     DateTime timestamp = DateTime.now();
@@ -51,15 +58,24 @@ class ChatController extends GetxController {
     UserModel sender = getSender(profileController.currentUser.value, targetUser);
     UserModel receiver = getReciver(profileController.currentUser.value, targetUser);
 
+    // Upload image if selected
     RxString imageUrl = "".obs;
     if (selectedImagePath.value.isNotEmpty) {
       imageUrl.value = await profileController.uploadImageToCloudinary(selectedImagePath.value);
+    }
+
+    // Upload video if selected
+    String uploadedVideoUrl = "";
+    if (videoPath != null && videoPath.isNotEmpty) {
+      uploadedVideoUrl = await profileController.uploadImageToCloudinary(videoPath);
     }
 
     var newChat = ChatModel(
       id: chatId,
       message: message,
       imageUrl: imageUrl.value,
+      videoUrl: uploadedVideoUrl,
+      audioUrl: audioUrl ?? "",
       senderId: auth.currentUser!.uid,
       receiverId: targetUserId,
       senderName: profileController.currentUser.value.name,
@@ -69,7 +85,15 @@ class ChatController extends GetxController {
 
     var roomDetails = ChatRoomModel(
       id: roomId,
-      lastMessage: message,
+      lastMessage: message.isNotEmpty
+          ? message
+          : imageUrl.value.isNotEmpty
+              ? "[Image]"
+              : uploadedVideoUrl.isNotEmpty
+                  ? "[Video]"
+                  : audioUrl != null
+                      ? "[Audio]"
+                      : "",
       lastMessageTimestamp: nowTime,
       sender: sender,
       receiver: receiver,
@@ -83,8 +107,9 @@ class ChatController extends GetxController {
       await db.collection("chats").doc(roomId).set(roomDetails.toJson());
       await contactController.saveContact(targetUser);
     } catch (e) {
-      print(e);
+      print("Error sending message: $e");
     }
+
     isLoading.value = false;
   }
 

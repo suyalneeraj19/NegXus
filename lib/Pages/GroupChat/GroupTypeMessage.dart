@@ -13,78 +13,68 @@ class GroupTypeMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    TextEditingController messageController = TextEditingController();
-    RxString message = "".obs;
-    ImagePickerController imagePickerController = Get.put(ImagePickerController());
-    GroupController groupController = Get.put(GroupController());
+    final TextEditingController messageController = TextEditingController();
+    final RxString message = "".obs;
+    final RxString videoPath = "".obs;
+    final ImagePickerController imagePickerController = Get.put(ImagePickerController());
+    final GroupController groupController = Get.put(GroupController());
+
     return Container(
-      // margin: EdgeInsets.all(10),
-      padding: EdgeInsets.symmetric(vertical: 5, horizontal: 15),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(100), color: Theme.of(context).colorScheme.primaryContainer),
+      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(100),
+        color: Theme.of(context).colorScheme.primaryContainer,
+      ),
       child: Row(
         children: [
           Expanded(
             child: TextField(
-              onChanged: (value) {
-                message.value = value;
-              },
               controller: messageController,
-              decoration: const InputDecoration(filled: false, hintText: "Type message ..."),
+              onChanged: (value) => message.value = value,
+              decoration: const InputDecoration(
+                filled: false,
+                hintText: "Type message ...",
+              ),
             ),
           ),
-          SizedBox(width: 10),
-          Obx(
-            () => groupController.selectedImagePath.value == ""
-                ? InkWell(
-                    onTap: () {
-                      ImagePickerBottomSheet(context, groupController.selectedImagePath, imagePickerController);
-                    },
-                    child: Container(
-                      width: 30,
-                      height: 30,
-                      child: SvgPicture.asset(
-                        AssetsImage.gallerySVG,
-                        width: 25,
-                      ),
-                    ),
-                  )
-                : SizedBox(),
-          ),
-          SizedBox(width: 10),
-          Obx(
-            () => message.value != "" || groupController.selectedImagePath.value != ""
-                ? InkWell(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    onTap: () {
-                      groupController.sendGroupMessage(
-                        messageController.text,
-                        groupModel.id!,
-                        "",
-                      );
-                      messageController.clear();
-                      message.value = "";
-                    },
-                    child: Container(
-                      width: 30,
-                      height: 30,
-                      child: groupController.isLoading.value
-                          ? CircularProgressIndicator()
-                          : SvgPicture.asset(
-                              AssetsImage.sendSVG,
-                              width: 25,
-                            ),
-                    ),
-                  )
-                : Container(
+          const SizedBox(width: 10),
+          Obx(() => groupController.selectedImagePath.value.isEmpty && videoPath.value.isEmpty
+              ? InkWell(
+                  onTap: () {
+                    ImagePickerBottomSheet(
+                      context,
+                      groupController.selectedImagePath,
+                      videoPath,
+                      imagePickerController,
+                    );
+                  },
+                  child: SvgPicture.asset(AssetsImage.gallerySVG, width: 30, height: 30),
+                )
+              : const SizedBox()),
+          const SizedBox(width: 10),
+          Obx(() => message.value.isNotEmpty || groupController.selectedImagePath.value.isNotEmpty || videoPath.value.isNotEmpty
+              ? InkWell(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  onTap: () {
+                    groupController.sendGroupMessage(
+                      messageController.text,
+                      groupModel.id!,
+                      videoPath: videoPath.value,
+                    );
+                    messageController.clear();
+                    message.value = "";
+                    videoPath.value = "";
+                  },
+                  child: SizedBox(
                     width: 30,
                     height: 30,
-                    child: SvgPicture.asset(
-                      AssetsImage.micSVG,
-                      width: 25,
-                    ),
+                    child: groupController.isLoading.value
+                        ? const CircularProgressIndicator()
+                        : SvgPicture.asset(AssetsImage.sendSVG, width: 25),
                   ),
-          ),
+                )
+              : SvgPicture.asset(AssetsImage.micSVG, width: 25)),
         ],
       ),
     );

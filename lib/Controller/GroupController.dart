@@ -126,22 +126,32 @@ class GroupController extends GetxController {
         .map((snapshot) => snapshot.docs.map((doc) => GroupModel.fromJson(doc.data())).toList());
   }
 
-  Future<void> sendGroupMessage(String message, String groupId, String imagePath) async {
+  Future<void> sendGroupMessage(String message, String groupId, {String? videoPath}) async {
     isLoading.value = true;
     try {
       final String trimmedMessage = message.trim();
       String imageUrl = "";
       String audioUrl = "";
+      String videoUrl = "";
 
+      // Upload image if selected
       if (selectedImagePath.value.isNotEmpty) {
-        imageUrl = await profileController.uploadFileToCloudinary(selectedImagePath.value, resourceType: "image");
+        imageUrl = await profileController.uploadImageToCloudinary(
+          selectedImagePath.value,
+        );
       }
 
+      // Upload audio if selected
       if (selectedAudioPath.value.isNotEmpty) {
-        audioUrl = await profileController.uploadFileToCloudinary(selectedAudioPath.value, resourceType: "audio");
+        audioUrl = await profileController.uploadAudioToCloudinary(
+          selectedAudioPath.value,
+        );
       }
 
-      if (trimmedMessage.isEmpty && imageUrl.isEmpty && audioUrl.isEmpty) {
+      // Upload video if passed
+
+      // Prevent empty messages
+      if (trimmedMessage.isEmpty && imageUrl.isEmpty && audioUrl.isEmpty && videoUrl.isEmpty) {
         errorMessage("Cannot send empty message");
         return;
       }
@@ -153,6 +163,7 @@ class GroupController extends GetxController {
         message: trimmedMessage,
         imageUrl: imageUrl,
         audioUrl: audioUrl,
+        videoUrl: videoUrl,
         senderId: auth.currentUser!.uid,
         senderName: profileController.currentUser.value.name,
         receiverId: groupId,
