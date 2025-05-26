@@ -32,10 +32,12 @@ dependencies:
   zego_uikit_prebuilt_call: ^4.16.28
   firebase_messaging: ^15.2.5
   flutter_local_notifications: ^19.2.0
-  video_compress: ^3.1.4
-  flutter_image_compress: ^2.4.0
-  ffmpeg_kit_flutter: 6.0.3-LTS
-
+  record: ^5.0.0
+  path_provider: ^2.1.2
+  permission_handler: ^11.0.1
+  audio_waveforms: ^1.0.4
+  just_audio: ^0.9.36
+  dio: ^5.4.0
 
 dev_dependencies:
   flutter_test:

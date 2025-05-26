@@ -15,6 +15,8 @@ import 'package:http_parser/http_parser.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
+import '../Config/CustomMessage.dart';
+
 class ChatController extends GetxController {
   final auth = FirebaseAuth.instance;
   final db = FirebaseFirestore.instance;
@@ -45,72 +47,92 @@ class ChatController extends GetxController {
     String targetUserId,
     String message,
     UserModel targetUser, {
-    String? audioUrl,
-    String? videoPath, // New optional video path
+    String? audioPath,
+    String? videoPath,
   }) async {
     isLoading.value = true;
 
-    String chatId = uuid.v6();
-    String roomId = getRoomId(targetUserId);
-    DateTime timestamp = DateTime.now();
-    String nowTime = DateFormat('hh:mm a').format(timestamp);
+    try {
+      final String trimmedMessage = message.trim();
+      String imageUrl = "";
+      String audioUrl = "";
+      String uploadedVideoUrl = "";
 
-    UserModel sender = getSender(profileController.currentUser.value, targetUser);
-    UserModel receiver = getReciver(profileController.currentUser.value, targetUser);
+      String chatId = uuid.v6();
+      String roomId = getRoomId(targetUserId);
+      DateTime timestamp = DateTime.now();
+      String nowTime = DateFormat('hh:mm a').format(timestamp);
 
-    // Upload image if selected
-    RxString imageUrl = "".obs;
-    if (selectedImagePath.value.isNotEmpty) {
-      imageUrl.value = await profileController.uploadImageToCloudinary(selectedImagePath.value);
-    }
+      UserModel sender = getSender(profileController.currentUser.value, targetUser);
+      UserModel receiver = getReciver(profileController.currentUser.value, targetUser);
 
-    // Upload video if selected
-    String uploadedVideoUrl = "";
-    if (videoPath != null && videoPath.isNotEmpty) {
-      uploadedVideoUrl = await profileController.uploadImageToCloudinary(videoPath);
-    }
+      // Upload image if selected
+      if (selectedImagePath.value.isNotEmpty) {
+        imageUrl = await profileController.uploadImageToCloudinary(selectedImagePath.value);
+      }
 
-    var newChat = ChatModel(
-      id: chatId,
-      message: message,
-      imageUrl: imageUrl.value,
-      videoUrl: uploadedVideoUrl,
-      audioUrl: audioUrl ?? "",
-      senderId: auth.currentUser!.uid,
-      receiverId: targetUserId,
-      senderName: profileController.currentUser.value.name,
-      timestamp: timestamp.toString(),
-      readStatus: "unread",
-    );
+      // Upload audio if provided (from param or selectedAudioPath)
+      String? audioToUpload = audioPath ?? selectedAudioPath.value;
+      if (audioToUpload != null && audioToUpload.isNotEmpty && File(audioToUpload).existsSync()) {
+        audioUrl = await profileController.uploadAudioToCloudinary(audioToUpload);
+      }
 
-    var roomDetails = ChatRoomModel(
-      id: roomId,
-      lastMessage: message.isNotEmpty
-          ? message
-          : imageUrl.value.isNotEmpty
+      // Upload video if selected
+      if (videoPath != null && videoPath.isNotEmpty) {
+        uploadedVideoUrl = await profileController.uploadVideoToCloudinary(videoPath);
+      }
+
+      // Prevent empty messages
+      if (trimmedMessage.isEmpty && imageUrl.isEmpty && audioUrl.isEmpty && uploadedVideoUrl.isEmpty) {
+        errorMessage("Cannot send empty message");
+        isLoading.value = false;
+        return;
+      }
+
+      var newChat = ChatModel(
+        id: chatId,
+        message: trimmedMessage,
+        imageUrl: imageUrl,
+        videoUrl: uploadedVideoUrl,
+        audioUrl: audioUrl,
+        senderId: auth.currentUser!.uid,
+        receiverId: targetUserId,
+        senderName: profileController.currentUser.value.name,
+        timestamp: timestamp.toString(),
+        readStatus: "unread",
+      );
+
+      var lastMessageText = trimmedMessage.isNotEmpty
+          ? trimmedMessage
+          : imageUrl.isNotEmpty
               ? "[Image]"
               : uploadedVideoUrl.isNotEmpty
                   ? "[Video]"
-                  : audioUrl != null
+                  : audioUrl.isNotEmpty
                       ? "[Audio]"
-                      : "",
-      lastMessageTimestamp: nowTime,
-      sender: sender,
-      receiver: receiver,
-      timestamp: timestamp.toString(),
-      unReadMessNo: 0,
-    );
+                      : "";
 
-    try {
+      var roomDetails = ChatRoomModel(
+        id: roomId,
+        lastMessage: lastMessageText,
+        lastMessageTimestamp: nowTime,
+        sender: sender,
+        receiver: receiver,
+        timestamp: timestamp.toString(),
+        unReadMessNo: 0,
+      );
+
       await db.collection("chats").doc(roomId).collection("messages").doc(chatId).set(newChat.toJson());
       selectedImagePath.value = "";
+      selectedAudioPath.value = "";
       await db.collection("chats").doc(roomId).set(roomDetails.toJson());
       await contactController.saveContact(targetUser);
     } catch (e) {
       print("Error sending message: $e");
+      errorMessage("Failed to send message");
+    } finally {
+      isLoading.value = false;
     }
-
-    isLoading.value = false;
   }
 
   Stream<List<ChatModel>> getMessages(String targetUserId) {

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:NegXus/Config/CustomMessage.dart';
 import 'package:NegXus/Controller/ProfileController.dart';
 import 'package:NegXus/Model/ChatModel.dart';
@@ -126,7 +128,12 @@ class GroupController extends GetxController {
         .map((snapshot) => snapshot.docs.map((doc) => GroupModel.fromJson(doc.data())).toList());
   }
 
-  Future<void> sendGroupMessage(String message, String groupId, {String? videoPath}) async {
+  Future<void> sendGroupMessage(
+    String message,
+    String groupId, {
+    String? videoPath,
+    String? audioPath,
+  }) async {
     isLoading.value = true;
     try {
       final String trimmedMessage = message.trim();
@@ -141,14 +148,16 @@ class GroupController extends GetxController {
         );
       }
 
-      // Upload audio if selected
-      if (selectedAudioPath.value.isNotEmpty) {
-        audioUrl = await profileController.uploadAudioToCloudinary(
-          selectedAudioPath.value,
-        );
+      // Upload audio if provided (from param or selectedAudioPath)
+      String? audioToUpload = audioPath ?? selectedAudioPath.value;
+      if (audioToUpload != null && audioToUpload.isNotEmpty && File(audioToUpload).existsSync()) {
+        audioUrl = await profileController.uploadAudioToCloudinary(audioToUpload);
       }
 
-      // Upload video if passed
+      // Upload video if provided
+      if (videoPath != null && videoPath.isNotEmpty) {
+        videoUrl = await profileController.uploadVideoToCloudinary(videoPath);
+      }
 
       // Prevent empty messages
       if (trimmedMessage.isEmpty && imageUrl.isEmpty && audioUrl.isEmpty && videoUrl.isEmpty) {

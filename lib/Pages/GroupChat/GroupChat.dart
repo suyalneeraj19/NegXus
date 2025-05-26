@@ -92,6 +92,7 @@ class GroupChatPage extends StatelessWidget {
                           return ChatBubble(
                             message: msg.message ?? "",
                             imageUrl: msg.imageUrl ?? "",
+                            audioUrl: msg.audioUrl ?? "",
                             isComming: isComming,
                             status: msg.readStatus ?? "",
                             time: formattedTime,

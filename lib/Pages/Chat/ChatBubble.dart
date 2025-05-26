@@ -1,4 +1,5 @@
 import 'package:NegXus/Config/Images.dart';
+import 'package:NegXus/Pages/Chat/VoiceMessagePlayer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -10,6 +11,7 @@ class ChatBubble extends StatelessWidget {
   final String status;
   final String imageUrl;
   final String profileImage;
+  final String audioUrl;
 
   const ChatBubble({
     super.key,
@@ -19,13 +21,21 @@ class ChatBubble extends StatelessWidget {
     required this.status,
     required this.imageUrl,
     required this.profileImage,
+    this.audioUrl = "",
   });
 
   @override
-  @override
   Widget build(BuildContext context) {
-    final Color incomingColor = Color(0xFFFFE6E6);
-    final Color outgoingColor = Color(0xFFD2E3FC);
+    final Gradient incomingGradient = LinearGradient(
+      colors: [Colors.purple.shade100, Colors.purple.shade50],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+    final Gradient outgoingGradient = LinearGradient(
+      colors: [Colors.blue.shade100, Colors.blue.shade50],
+      begin: Alignment.topRight,
+      end: Alignment.bottomLeft,
+    );
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -37,11 +47,8 @@ class ChatBubble extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: CircleAvatar(
-                radius: 16,
+                radius: 18,
                 backgroundImage: CachedNetworkImageProvider(profileImage),
-                onBackgroundImageError: (_, __) {
-                  // Handle image error if needed
-                },
               ),
             ),
           Flexible(
@@ -49,69 +56,89 @@ class ChatBubble extends StatelessWidget {
               crossAxisAlignment: isComming ? CrossAxisAlignment.start : CrossAxisAlignment.end,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(12),
                   constraints: BoxConstraints(
                     maxWidth: MediaQuery.sizeOf(context).width / 1.3,
                   ),
                   decoration: BoxDecoration(
-                    color: isComming ? incomingColor : outgoingColor,
+                    gradient: isComming ? incomingGradient : outgoingGradient,
                     borderRadius: isComming
                         ? const BorderRadius.only(
-                            topLeft: Radius.circular(10),
-                            topRight: Radius.circular(10),
+                            topLeft: Radius.circular(18),
+                            topRight: Radius.circular(18),
                             bottomLeft: Radius.circular(0),
-                            bottomRight: Radius.circular(10),
+                            bottomRight: Radius.circular(18),
                           )
                         : const BorderRadius.only(
-                            topLeft: Radius.circular(10),
-                            topRight: Radius.circular(10),
-                            bottomLeft: Radius.circular(10),
+                            topLeft: Radius.circular(18),
+                            topRight: Radius.circular(18),
+                            bottomLeft: Radius.circular(18),
                             bottomRight: Radius.circular(0),
                           ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (isComming ? Colors.purple : Colors.blue).withOpacity(0.08),
+                        blurRadius: 8,
+                        offset: const Offset(2, 2),
+                      ),
+                    ],
                   ),
-                  child: imageUrl == ""
-                      ? Text(message)
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: CachedNetworkImage(
-                                imageUrl: imageUrl,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => const CircularProgressIndicator(),
-                                errorWidget: (context, url, error) => const Icon(Icons.error),
+                  child: audioUrl.isNotEmpty
+                      ? VoiceMessagePlayer(audioUrl: audioUrl, isComming: isComming)
+                      : imageUrl == ""
+                          ? Text(
+                              message,
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.black87,
+                                fontWeight: FontWeight.w500,
                               ),
+                            )
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: CachedNetworkImage(
+                                    imageUrl: imageUrl,
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) => const CircularProgressIndicator(),
+                                    errorWidget: (context, url, error) => const Icon(Icons.error),
+                                  ),
+                                ),
+                                message == "" ? Container() : const SizedBox(height: 10),
+                                message == ""
+                                    ? Container()
+                                    : Text(
+                                        message,
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                              ],
                             ),
-                            message == "" ? Container() : const SizedBox(height: 10),
-                            message == "" ? Container() : Text(message),
-                          ],
-                        ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: isComming ? MainAxisAlignment.start : MainAxisAlignment.end,
                   children: [
-                    if (isComming)
-                      Text(
-                        time,
-                        style: Theme.of(context).textTheme.labelMedium,
-                      )
-                    else
-                      Row(
-                        children: [
-                          Text(
-                            time,
-                            style: Theme.of(context).textTheme.labelMedium,
+                    Text(
+                      time,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
                           ),
-                          const SizedBox(width: 10),
-                          SvgPicture.asset(
-                            AssetsImage.statusSVG,
-                            color: status == "read" ? Colors.green : Colors.grey,
-                            width: 20,
-                          )
-                        ],
-                      ),
+                    ),
+                    if (!isComming) ...[
+                      const SizedBox(width: 10),
+                      SvgPicture.asset(
+                        AssetsImage.statusSVG,
+                        color: status == "read" ? Colors.green : Colors.grey,
+                        width: 18,
+                      )
+                    ]
                   ],
                 )
               ],
@@ -121,12 +148,8 @@ class ChatBubble extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(left: 8),
               child: CircleAvatar(
-                radius: 16,
+                radius: 18,
                 backgroundImage: CachedNetworkImageProvider(profileImage),
-                onBackgroundImageError: (_, __) {
-                  // Handle image error if needed
-                  AssetsImage.defaultProfileUrl;
-                },
               ),
             ),
         ],

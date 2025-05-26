@@ -114,7 +114,7 @@ class ProfileController extends GetxController {
   }
 
   Future<String> uploadAudioToCloudinary(String audioPath) async {
-    return await uploadFileToCloudinary(audioPath, "audio", "mpeg");
+    return await uploadFileToCloudinary(audioPath, "video", "mp4");
   }
 
   Future<String> uploadVideoToCloudinary(String videoPath) async {
