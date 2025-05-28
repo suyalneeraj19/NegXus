@@ -14,6 +14,8 @@ import 'package:cloudinary_url_gen/cloudinary.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
+import 'Config/String.dart';
+
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -24,10 +26,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 final navigatorKey = GlobalKey<NavigatorState>();
 
 // Create a Cloudinary instance and set your cloud name.
-var cloudinary = Cloudinary.fromStringUrl("cloudinary://119574217634865:cGiIGQLtJiG8ycyVfLzr3thuYzk@dxvnxycz6");
 
 void main() async {
-  cloudinary.config.urlConfig.secure = true;
+  WelcomePageString.cloudinary.config.urlConfig.secure = true;
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
