@@ -14,25 +14,35 @@ dependencies:
   flutter_svg: ^2.1.0
   slide_to_act: ^2.0.2
   get: ^4.6.6
-  firebase_core: ^2.25.4
-  firebase_auth: ^4.17.4
-  cloud_firestore: ^4.15.4
-  image_picker: 1.0.4
+  firebase_core: ^3.13.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.6.7
+  image_picker: ^1.1.2
   cloudinary_url_gen: ^1.0.0
   cloudinary_api: ^1.0.0
   cached_network_image: ^3.3.1
   intl: ^0.19.0
   uuid: ^4.2.2
-  zego_uikit_prebuilt_call: ^4.16.28
+  zego_uikit: ^2.27.16
+  zego_uikit_signaling_plugin: ^2.8.6
+  zego_uikit_prebuilt_live_streaming: ^3.13.5
   http: ^1.0.0
   fluttertoast: ^8.2.4
   url_launcher: ^6.2.5
-
+  zego_uikit_prebuilt_call: ^4.16.28
+  firebase_messaging: ^15.2.5
+  flutter_local_notifications: ^19.2.0
+  record: ^5.0.0
+  path_provider: ^2.1.2
+  permission_handler: ^11.0.1
+  audio_waveforms: ^1.0.4
+  just_audio: ^0.9.36
+  dio: ^5.4.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true

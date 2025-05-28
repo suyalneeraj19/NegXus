@@ -1,16 +1,12 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:NegXus/Model/UserModel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
-import 'dart:convert';
-import 'dart:io';
-import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
-import 'package:mime/mime.dart';
-import 'package:path/path.dart' as path;
 
 class ProfileController extends GetxController {
   final auth = FirebaseAuth.instance;
@@ -76,30 +72,52 @@ class ProfileController extends GetxController {
     }
   }
 
-  Future<String> uploadImageToCloudinary(String imagePath) async {
+  // Method to reset user data on logout
+  void resetUserData() {
+    currentUser.value = UserModel(); // Reset the current user to an empty user model
+  }
+
+  Future<String> uploadFileToCloudinary(String filePath, String resourceType, String fileType) async {
     const cloudName = 'dxvnxycz6';
     const uploadPreset = 'flutter_upload';
 
-    final url = Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/image/upload');
-    final file = File(imagePath);
+    final url = Uri.parse('https://api.cloudinary.com/v1_1/$cloudName/$resourceType/upload');
+    final file = File(filePath);
 
-    final request = http.MultipartRequest('POST', url)
-      ..fields['upload_preset'] = uploadPreset
-      ..files.add(await http.MultipartFile.fromPath(
-        'file',
-        file.path,
-        contentType: MediaType('image', 'jpeg'),
-      ));
+    try {
+      final request = http.MultipartRequest('POST', url)
+        ..fields['upload_preset'] = uploadPreset
+        ..files.add(await http.MultipartFile.fromPath(
+          'file',
+          file.path,
+          contentType: MediaType(resourceType, fileType),
+        ));
 
-    final response = await request.send();
-    final res = await http.Response.fromStream(response);
+      final response = await request.send();
+      final res = await http.Response.fromStream(response);
 
-    if (res.statusCode == 200) {
-      final data = json.decode(res.body);
-      return data['secure_url'];
-    } else {
-      print('Upload failed: ${res.body}');
+      if (res.statusCode == 200) {
+        final data = json.decode(res.body);
+        return data['secure_url'];
+      } else {
+        print('Upload failed: ${res.body}');
+        return '';
+      }
+    } catch (e) {
+      print('Upload error: $e');
       return '';
     }
+  }
+
+  Future<String> uploadImageToCloudinary(String imagePath) async {
+    return await uploadFileToCloudinary(imagePath, "image", "jpeg");
+  }
+
+  Future<String> uploadAudioToCloudinary(String audioPath) async {
+    return await uploadFileToCloudinary(audioPath, "video", "mp4");
+  }
+
+  Future<String> uploadVideoToCloudinary(String videoPath) async {
+    return await uploadFileToCloudinary(videoPath, "video", "mp4");
   }
 }

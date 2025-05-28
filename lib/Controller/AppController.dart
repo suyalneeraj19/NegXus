@@ -20,8 +20,8 @@ class AppController extends GetxController {
   }
 
   Future<void> checkLatestVersion() async {
-    const repositoryOwner = 'MrNitishroy';
-    const repositoryName = 'Sampark';
+    const repositoryOwner = 'suyalneeraj19';
+    const repositoryName = 'negxus_webb';
     final response = await http.get(Uri.parse(
       'https://api.github.com/repos/$repositoryOwner/$repositoryName/releases/latest',
     ));

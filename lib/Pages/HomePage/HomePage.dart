@@ -1,5 +1,11 @@
 import 'package:NegXus/Config/Images.dart';
 import 'package:NegXus/Config/String.dart';
+import 'package:NegXus/Controller/AppController.dart';
+import 'package:NegXus/Controller/CallController.dart';
+import 'package:NegXus/Controller/ContactController.dart';
+import 'package:NegXus/Controller/ImagePicker.dart';
+import 'package:NegXus/Controller/StatusController.dart';
+import 'package:NegXus/Pages/CallHistory/CallHistory.dart';
 import 'package:NegXus/Pages/HomePage/ChatsList.dart';
 import 'package:NegXus/Pages/HomePage/myTabBar.dart';
 import 'package:NegXus/Pages/ProfilePage/ProfilePage.dart';
@@ -9,6 +15,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 
 import '../../Controller/ProfileController.dart';
+import '../Groups/GroupsPage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,47 +25,53 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
-  final ProfileController profileController = Get.put(ProfileController());
   @override
   Widget build(BuildContext context) {
     TabController tabController = TabController(length: 3, vsync: this);
+    ProfileController profileController = Get.put(ProfileController());
+    ContactController contactController = Get.put(ContactController());
+    ImagePickerController imagePickerController = Get.put(ImagePickerController());
+    StatusController statusController = Get.put(StatusController());
+    CallController callController = Get.put(CallController());
+    AppController appController = Get.put(AppController());
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
         title: Text(
           AppString.appName,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Colors.white,
-              ),
+          style: Theme.of(context).textTheme.headlineSmall,
         ),
         leading: Padding(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8.0),
           child: SvgPicture.asset(
             AssetsImage.appIconSVG,
-            width: 100,
           ),
         ),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              appController.checkLatestVersion();
+            },
             icon: Icon(
-              Icons.search_rounded,
+              Icons.search,
             ),
           ),
           IconButton(
             onPressed: () async {
-              await profileController.getUserDetails();
               Get.to(ProfilePage());
             },
             icon: Icon(
               Icons.more_vert,
             ),
-          ),
+          )
         ],
         bottom: myTabBar(tabController, context),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Get.toNamed("/contactPage");
+        },
         backgroundColor: Theme.of(context).colorScheme.primary,
         child: Icon(
           Icons.add,
@@ -70,21 +83,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         child: TabBarView(
           controller: tabController,
           children: [
-            ChatsList(),
-            ListView(
-              children: [
-                ListTile(
-                  title: Text("Name Nitish"),
-                )
-              ],
-            ),
-            ListView(
-              children: [
-                ListTile(
-                  title: Text("Name Nitish"),
-                )
-              ],
-            ),
+            ChatList(),
+            GroupPage(),
+            CallHistory(),
           ],
         ),
       ),

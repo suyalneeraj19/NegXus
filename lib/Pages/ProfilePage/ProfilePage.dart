@@ -1,222 +1,204 @@
 import 'dart:io';
-
 import 'package:NegXus/Controller/AuthController.dart';
 import 'package:NegXus/Controller/ImagePicker.dart';
 import 'package:NegXus/Controller/ProfileController.dart';
 import 'package:NegXus/Pages/Widgets/PrimaryButton.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart' as img;
 
-class ProfilePage extends StatefulWidget {
+class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
-}
-
-class _ProfilePageState extends State<ProfilePage> {
-  final RxBool isEdit = false.obs;
-  late final ProfileController profileController;
-  late final ImagePickerController imagePickerController;
-  late final AuthController authController;
-  final TextEditingController name = TextEditingController();
-  final TextEditingController email = TextEditingController();
-  final TextEditingController phone = TextEditingController();
-  final TextEditingController about = TextEditingController();
-  final RxString imagePath = ''.obs;
-
-  @override
-  void initState() {
-    super.initState();
-
-    profileController = Get.put(ProfileController());
-    imagePickerController = Get.put(ImagePickerController());
-    authController = Get.put(AuthController());
-
-    // Set initial values
-    final user = profileController.currentUser.value;
-    name.text = user.name ?? "";
-    email.text = user.email ?? "";
-    phone.text = user.phoneNumber ?? "";
-    about.text = user.about ?? "";
-
-    // Listen for user data changes
-    ever(profileController.currentUser, (user) {
-      name.text = user.name ?? "";
-      email.text = user.email ?? "";
-      phone.text = user.phoneNumber ?? "";
-      about.text = user.about ?? "";
-    });
-  }
-
-  @override
-  void dispose() {
-    name.dispose();
-    email.dispose();
-    phone.dispose();
-    about.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    RxBool isEdit = false.obs;
+    ProfileController profileController = Get.put(ProfileController());
+    TextEditingController name = TextEditingController(text: profileController.currentUser.value.name);
+    TextEditingController email = TextEditingController(text: profileController.currentUser.value.email);
+    TextEditingController phone = TextEditingController(text: profileController.currentUser.value.phoneNumber);
+    TextEditingController about = TextEditingController(text: profileController.currentUser.value.about);
+    ImagePickerController imagePickerController = Get.put(ImagePickerController());
+    RxString imagePath = "".obs;
+
+    AuthController authController = Get.put(AuthController());
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Profile"),
+        title: Text("Profile"),
         actions: [
           IconButton(
             onPressed: () {
               authController.logoutUser();
             },
-            icon: const Icon(Icons.logout),
-          )
+            icon: Icon(Icons.logout),
+          ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(10),
-        child: Column(
+        child: ListView(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: EdgeInsets.all(10),
+              // height: 300,
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primaryContainer,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Obx(
-                () => Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
                       children: [
-                        Obx(
-                          () => isEdit.value
-                              ? InkWell(
-                                  onTap: () async {
-                                    imagePath.value = await imagePickerController.pickImage(img.ImageSource.gallery); // ✅ Fixed here
-                                    print("Image picked: ${imagePath.value}");
-                                  },
-                                  child: Container(
-                                    height: 200,
-                                    width: 200,
-                                    decoration: BoxDecoration(
-                                      color: Theme.of(context).colorScheme.background,
-                                      borderRadius: BorderRadius.circular(100),
-                                    ),
-                                    child: imagePath.value == ""
-                                        ? const Icon(Icons.add, size: 40)
-                                        : ClipRRect(
-                                            borderRadius: BorderRadius.circular(100),
-                                            child: Image.file(
-                                              File(imagePath.value),
-                                              fit: BoxFit.cover,
-                                            ),
-                                          ),
-                                  ),
-                                )
-                              : Container(
-                                  height: 200,
-                                  width: 200,
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.background,
-                                    borderRadius: BorderRadius.circular(100),
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(100),
-                                    child: profileController.currentUser.value.profileImage != null
-                                        ? (profileController.currentUser.value.profileImage!.startsWith('http')
-                                            ? Image.network(
-                                                profileController.currentUser.value.profileImage!,
-                                                fit: BoxFit.cover,
-                                                height: 200,
-                                                width: 200,
+                        SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Obx(
+                              () => isEdit.value
+                                  ? InkWell(
+                                      splashColor: Colors.transparent,
+                                      highlightColor: Colors.transparent,
+                                      onTap: () async {
+                                        imagePath.value = await imagePickerController.pickImage(img.ImageSource.gallery);
+                                        print("Image Picked" + imagePath.value);
+                                      },
+                                      child: Container(
+                                        height: 200,
+                                        width: 200,
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(context).colorScheme.background,
+                                          borderRadius: BorderRadius.circular(100),
+                                        ),
+                                        child: imagePath.value == ""
+                                            ? Icon(
+                                                Icons.add,
                                               )
-                                            : Image.file(
-                                                File(profileController.currentUser.value.profileImage!),
+                                            : ClipRRect(
+                                                borderRadius: BorderRadius.circular(100),
+                                                child: Image.file(
+                                                  File(imagePath.value),
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              ),
+                                      ),
+                                    )
+                                  : Container(
+                                      height: 200,
+                                      width: 200,
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).colorScheme.background,
+                                        borderRadius: BorderRadius.circular(100),
+                                      ),
+                                      child: profileController.currentUser.value.profileImage == null ||
+                                              profileController.currentUser.value.profileImage == ""
+                                          ? Icon(
+                                              Icons.image,
+                                            )
+                                          : ClipRRect(
+                                              borderRadius: BorderRadius.circular(100),
+                                              child: CachedNetworkImage(
+                                                imageUrl: profileController.currentUser.value.profileImage!,
                                                 fit: BoxFit.cover,
-                                                height: 200,
-                                                width: 200,
-                                              ))
-                                        : const Icon(Icons.person, size: 100),
-                                  ),
-                                ),
+                                                placeholder: (context, url) => CircularProgressIndicator(),
+                                                errorWidget: (context, url, error) => Icon(Icons.error),
+                                              )),
+                                    ),
+                            )
+                          ],
                         ),
+                        SizedBox(height: 20),
+                        Obx(
+                          () => TextField(
+                            controller: name,
+                            enabled: isEdit.value,
+                            decoration: InputDecoration(
+                              labelText: "Name",
+                              prefixIcon: const Icon(Icons.person, color: Colors.white),
+                              filled: true,
+                              fillColor:
+                                  isEdit.value ? Theme.of(context).colorScheme.background : Theme.of(context).colorScheme.primaryContainer,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        Obx(
+                          () => TextField(
+                            controller: about,
+                            enabled: isEdit.value,
+                            minLines: 1,
+                            maxLines: 3,
+                            decoration: InputDecoration(
+                              labelText: "About",
+                              prefixIcon: const Icon(Icons.info, color: Colors.white),
+                              filled: true,
+                              fillColor:
+                                  isEdit.value ? Theme.of(context).colorScheme.background : Theme.of(context).colorScheme.primaryContainer,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        TextField(
+                          controller: email,
+                          enabled: false,
+                          decoration: InputDecoration(
+                            labelText: "Email",
+                            prefixIcon: const Icon(Icons.alternate_email, color: Colors.white),
+                            filled: true,
+                            fillColor: Theme.of(context).colorScheme.primaryContainer,
+                          ),
+                        ),
+                        Obx(
+                          () => TextField(
+                            controller: phone,
+                            enabled: isEdit.value,
+                            keyboardType: TextInputType.phone,
+                            decoration: InputDecoration(
+                              labelText: "Phone",
+                              prefixIcon: const Icon(Icons.phone, color: Colors.white),
+                              filled: true,
+                              fillColor:
+                                  isEdit.value ? Theme.of(context).colorScheme.background : Theme.of(context).colorScheme.primaryContainer,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Obx(
+                              () => isEdit.value
+                                  ? PrimaryButton(
+                                      btnName: "Save",
+                                      icon: Icons.save,
+                                      ontap: () async {
+                                        await profileController.updateProfile(
+                                          imagePath: imagePath.value,
+                                          name: name.text,
+                                          about: about.text,
+                                          phoneNumber: phone.text,
+                                        );
+                                        isEdit.value = false;
+                                      },
+                                    )
+                                  : PrimaryButton(
+                                      btnName: "Edit",
+                                      icon: Icons.edit,
+                                      ontap: () {
+                                        isEdit.value = true;
+                                      },
+                                    ),
+                            )
+                          ],
+                        ),
+                        SizedBox(height: 20),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: name,
-                      enabled: isEdit.value,
-                      decoration: InputDecoration(
-                        labelText: "Name",
-                        prefixIcon: const Icon(Icons.person, color: Colors.white),
-                        filled: true,
-                        fillColor: isEdit.value ? Theme.of(context).colorScheme.background : Theme.of(context).colorScheme.primaryContainer,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: about,
-                      enabled: isEdit.value,
-                      minLines: 1,
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        labelText: "About",
-                        prefixIcon: const Icon(Icons.info, color: Colors.white),
-                        filled: true,
-                        fillColor: isEdit.value ? Theme.of(context).colorScheme.background : Theme.of(context).colorScheme.primaryContainer,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: email,
-                      enabled: false,
-                      decoration: InputDecoration(
-                        labelText: "Email",
-                        prefixIcon: const Icon(Icons.alternate_email, color: Colors.white),
-                        filled: true,
-                        fillColor: Theme.of(context).colorScheme.primaryContainer,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: phone,
-                      enabled: isEdit.value,
-                      keyboardType: TextInputType.phone,
-                      decoration: InputDecoration(
-                        labelText: "Phone",
-                        prefixIcon: const Icon(Icons.phone, color: Colors.white),
-                        filled: true,
-                        fillColor: isEdit.value ? Theme.of(context).colorScheme.background : Theme.of(context).colorScheme.primaryContainer,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        PrimaryButton(
-                          btnName: isEdit.value ? 'Save' : 'Edit',
-                          icon: isEdit.value ? Icons.save : Icons.edit,
-                          ontap: () async {
-                            if (isEdit.value) {
-                              await profileController.updateProfile(
-                                name: name.text,
-                                about: about.text,
-                                imagePath: imagePath.value,
-                                phoneNumber: phone.text,
-                              );
-                            }
-                            isEdit.value = !isEdit.value;
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                ),
+                  )
+                ],
               ),
-            ),
+            )
           ],
         ),
       ),

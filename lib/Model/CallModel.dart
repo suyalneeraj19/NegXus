@@ -41,7 +41,7 @@ class CallModel {
     receiverEmail = json["receiverEmail"];
     status = json["status"];
     type = json["type"];
-    type = json["time"];
+    time = json["time"];
     timestamp = json["timestamp"];
   }
 

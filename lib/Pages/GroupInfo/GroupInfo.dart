@@ -3,7 +3,6 @@ import 'package:NegXus/Model/GroupModel.dart';
 import 'package:NegXus/Pages/GroupInfo/GroupMemberInfo.dart';
 import 'package:NegXus/Pages/HomePage/ChatTile.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 class GroupInfo extends StatelessWidget {
   final GroupModel groupModel;

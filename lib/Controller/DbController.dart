@@ -4,28 +4,25 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class Dbcontroller extends GetxController {
+class DbController extends GetxController {
   final db = FirebaseFirestore.instance;
   final auth = FirebaseAuth.instance;
   RxBool isLoading = false.obs;
-
   RxList<UserModel> userList = <UserModel>[].obs;
 
   void onInit() async {
     super.onInit();
-    await getUSerList();
+    await getUserList();
   }
 
-  Future<void> getUSerList() async {
+  Future<void> getUserList() async {
     isLoading.value = true;
     try {
       await db.collection("users").get().then(
             (value) => {
               userList.value = value.docs
                   .map(
-                    (e) => UserModel.fromJson(
-                      e.data(),
-                    ),
+                    (e) => UserModel.fromJson(e.data()),
                   )
                   .toList(),
             },

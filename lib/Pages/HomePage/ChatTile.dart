@@ -1,78 +1,80 @@
+import 'package:NegXus/Controller/ChatController.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_instance/get_instance.dart';
 
 class ChatTile extends StatelessWidget {
   final String imageUrl;
   final String name;
   final String lastChat;
   final String lastTime;
-
-  const ChatTile({
-    super.key,
-    required this.imageUrl,
-    required this.name,
-    required this.lastChat,
-    required this.lastTime,
-  });
+  final String unReadMessageCount;
+  const ChatTile(
+      {super.key,
+      required this.imageUrl,
+      required this.name,
+      required this.lastChat,
+      required this.lastTime,
+      this.unReadMessageCount = "0"});
 
   @override
   Widget build(BuildContext context) {
-    // 1) Build the avatar widget, network vs asset
-    final Widget avatar = ClipOval(
-      child: imageUrl.startsWith('http')
-          ? Image.network(
-              imageUrl,
-              width: 70,
-              height: 70,
-              fit: BoxFit.cover,
-            )
-          : Image.asset(
-              imageUrl,
-              width: 70,
-              height: 70,
-              fit: BoxFit.cover,
-            ),
-    );
-
+    ChatController chatController = Get.put(ChatController());
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.all(10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         color: Theme.of(context).colorScheme.primaryContainer,
       ),
-      padding: const EdgeInsets.all(10),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Avatar + text
-          avatar,
-          const SizedBox(width: 15),
-
-          // Text column in Expanded to avoid overflow
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text(
-                  name,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
+                Container(
+                  height: 70,
+                  width: 70,
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.circular(100),
+                      child: CachedNetworkImage(
+                        imageUrl: imageUrl,
+                        fit: BoxFit.cover,
+                        width: 70,
+                        placeholder: (context, url) => CircularProgressIndicator(),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
+                      )),
                 ),
-                const SizedBox(height: 5),
-                Text(
-                  lastChat,
-                  style: Theme.of(context).textTheme.labelSmall,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
+                SizedBox(width: 15),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        lastChat,
+                        maxLines: 1,
+                        style: Theme.of(context).textTheme.labelMedium,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-
-          // Timestamp
-          const SizedBox(width: 10),
-          Text(
-            lastTime,
-            style: Theme.of(context).textTheme.labelMedium,
+          Column(
+            children: [
+              Text(
+                lastTime,
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+            ],
           ),
         ],
       ),

@@ -12,25 +12,27 @@ class SelectedMembers extends StatelessWidget {
   Widget build(BuildContext context) {
     GroupController groupController = Get.put(GroupController());
     return Obx(
-      () => Row(
+      () => SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
           children: groupController.groupMembers
               .map(
                 (e) => Stack(
                   children: [
                     Container(
-                        margin: EdgeInsets.all(10),
-                        width: 70,
-                        height: 70,
-                        decoration: BoxDecoration(),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(100),
-                          child: CachedNetworkImage(
-                            imageUrl: e.profileImage ?? AssetsImage.defaultProfileUrl,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => CircularProgressIndicator(),
-                            errorWidget: (context, url, error) => Icon(Icons.error),
-                          ),
-                        )),
+                      margin: EdgeInsets.all(10),
+                      width: 70,
+                      height: 70,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(100),
+                        child: CachedNetworkImage(
+                          imageUrl: e.profileImage ?? AssetsImage.defaultProfileUrl,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => CircularProgressIndicator(),
+                          errorWidget: (context, url, error) => Icon(Icons.error),
+                        ),
+                      ),
+                    ),
                     Positioned(
                       right: 0,
                       bottom: 0,
@@ -55,7 +57,9 @@ class SelectedMembers extends StatelessWidget {
                   ],
                 ),
               )
-              .toList()),
+              .toList(),
+        ),
+      ),
     );
   }
 }

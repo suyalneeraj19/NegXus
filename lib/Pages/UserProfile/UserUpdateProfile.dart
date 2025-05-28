@@ -1,127 +1,143 @@
-import 'package:NegXus/Pages/Widgets/PrimaryButton.dart';
+import 'package:NegXus/Config/Images.dart';
+import 'package:NegXus/Controller/ProfileController.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_instance/get_instance.dart';
 
-class UserUpdateProfile extends StatelessWidget {
-  const UserUpdateProfile({super.key});
+class LoginUserInfo extends StatelessWidget {
+  final String profileImage;
+  final String userName;
+  final String userEmail;
+  const LoginUserInfo({super.key, required this.profileImage, required this.userName, required this.userEmail});
 
-  @override
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Update Profile"),
+    ProfileController profileController = Get.put(ProfileController());
+    return Container(
+      padding: EdgeInsets.all(20),
+      // height: 100,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: Theme.of(context).colorScheme.primaryContainer,
       ),
-      body: Padding(
-        padding: EdgeInsets.all(10),
-        child: SingleChildScrollView(
-          // <-- added scroll view here
-          child: Column(
-            children: [
-              Container(
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                ),
-                child: Row(
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 200,
-                            height: 200,
-                            child: Center(
-                              child: Icon(
-                                Icons.image,
-                                size: 40,
-                              ),
-                            ),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.background,
-                              borderRadius: BorderRadius.circular(100),
-                            ),
-                          ),
-                          Row(
-                            children: [
-                              Text("Personal Info", style: Theme.of(context).textTheme.bodyMedium),
-                            ],
-                          ),
-                          SizedBox(height: 20),
-                          Row(
-                            children: [
-                              Text("Name", style: Theme.of(context).textTheme.labelMedium),
-                            ],
-                          ),
-                          SizedBox(height: 10),
-                          TextField(
-                            textInputAction: TextInputAction.next,
-                            decoration: InputDecoration(
-                              prefixIcon: Icon(Icons.person),
-                              filled: true,
-                              hintText: 'Jon Snow',
-                              fillColor: Theme.of(context).colorScheme.background,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 20),
-                          Row(
-                            children: [
-                              Text("Email Id", style: Theme.of(context).textTheme.labelMedium),
-                            ],
-                          ),
-                          SizedBox(height: 10),
-                          TextField(
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.next,
-                            decoration: InputDecoration(
-                              prefixIcon: Icon(Icons.alternate_email_rounded),
-                              filled: true,
-                              hintText: 'JonSnow@gmail.com',
-                              fillColor: Theme.of(context).colorScheme.background,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 20),
-                          Row(
-                            children: [
-                              Text("Phone Number", style: Theme.of(context).textTheme.labelMedium),
-                            ],
-                          ),
-                          SizedBox(height: 10),
-                          TextField(
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.next,
-                            decoration: InputDecoration(
-                              prefixIcon: Icon(Icons.call),
-                              filled: true,
-                              hintText: '876523XXXX',
-                              fillColor: Theme.of(context).colorScheme.background,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 30),
-                          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                            PrimaryButton(btnName: "Save", icon: Icons.save, ontap: () {}),
-                          ])
-                        ],
+                    Container(
+                      width: 150,
+                      height: 150,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(100),
+                        child: CachedNetworkImage(
+                          imageUrl: profileImage,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => CircularProgressIndicator(),
+                          errorWidget: (context, url, error) => Icon(Icons.error),
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-        ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      userName,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ],
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      userEmail,
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Container(
+                      height: 50,
+                      padding: EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        color: Theme.of(context).colorScheme.background,
+                      ),
+                      child: Row(children: [
+                        SvgPicture.asset(
+                          AssetsImage.callSVG,
+                          width: 25,
+                        ),
+                        SizedBox(width: 10),
+                        Text(
+                          "Call",
+                          style: TextStyle(
+                            color: Color(0xff039C00),
+                          ),
+                        )
+                      ]),
+                    ),
+                    Container(
+                      height: 50,
+                      padding: EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        color: Theme.of(context).colorScheme.background,
+                      ),
+                      child: Row(children: [
+                        SvgPicture.asset(
+                          AssetsImage.videocallSVG,
+                          width: 25,
+                          color: Color(0xffFF9900),
+                        ),
+                        SizedBox(width: 10),
+                        Text(
+                          "Video",
+                          style: TextStyle(
+                            color: Color(0xffFF9900),
+                          ),
+                        )
+                      ]),
+                    ),
+                    Container(
+                      height: 50,
+                      padding: EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        color: Theme.of(context).colorScheme.background,
+                      ),
+                      child: Row(children: [
+                        SvgPicture.asset(
+                          AssetsImage.appIconSVG,
+                          width: 25,
+                        ),
+                        SizedBox(width: 10),
+                        Text(
+                          "Chat",
+                          style: TextStyle(
+                            color: Color(0xff0057FF),
+                          ),
+                        )
+                      ]),
+                    )
+                  ],
+                )
+              ],
+            ),
+          )
+        ],
       ),
     );
   }
