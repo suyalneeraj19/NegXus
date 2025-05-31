@@ -158,3 +158,25 @@ Push to your fork: git push origin feature/your-feature-name
 
 Submit a Pull Request
 ```
+
+
+---
+## 📄 Project Documents
+
+### 🔹 [Final SE Report (View on GitHub)](https://github.com/suyalneeraj19/NegXus/blob/master/FInal%20SE%20Report.pdf)
+👉 [Download Final SE Report (PDF)](https://github.com/suyalneeraj19/NegXus/raw/master/FInal%20SE%20Report.pdf)
+
+---
+
+### 🔹 [SYNOPSIS (View on GitHub)](https://github.com/suyalneeraj19/NegXus/blob/master/SYNOPSIS.pdf)
+👉 [Download SYNOPSIS (PDF)](https://github.com/suyalneeraj19/NegXus/raw/master/SYNOPSIS.pdf)
+
+---
+
+## 📲 Get the App
+
+🔹 [⬇️ Download APK](https://github.com/suyalneeraj19/negxus_webb/releases/download/2.0.0/app-armeabi-v7a-release.apk)
+
+🔹 [🌐 Visit App Website](https://suyalneeraj19.github.io/negxus_webb/)
+
+---
